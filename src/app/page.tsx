@@ -1,101 +1,329 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import {
+  useReactTable,
+  createColumnHelper,
+  getCoreRowModel,
+  getPaginationRowModel,
+  ColumnDef,
+  flexRender,
+} from "@tanstack/react-table";
+import { format, parseISO } from "date-fns";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface CallRecord {
+  "User-Name": string;
+  "Calling-Station-Id": string;
+  "Called-Station-Id": string;
+  "h323-setup-time": string;
+  "h323-connect-time": string;
+  "h323-disconnect-time": string;
+  "h323-call-type": string;
+  "Acct-Session-Time": string;
+  "h323-disconnect-cause": string;
+  "NAS-IP-Address": string;
+  "call-id": string;
+  "release-source": string;
+}
+
+interface BilhetesResponse {
+  data: CallRecord[];
+  total: number;
+  currentPage: number;
+  perPage: number;
+  totalPages: number;
+}
+
+const columnHelper = createColumnHelper<CallRecord>();
+
+const columns = [
+  columnHelper.accessor("Calling-Station-Id", {
+    header: "Origem",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("Called-Station-Id", {
+    header: "Destino",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("h323-setup-time", {
+    header: "Início",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("h323-disconnect-time", {
+    header: "Fim",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("Acct-Session-Time", {
+    header: "Duração",
+    cell: (info) => {
+      const seconds = parseInt(info.getValue());
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+    },
+  }),
+  columnHelper.accessor("User-Name", {
+    header: "Nap",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("h323-disconnect-cause", {
+    header: "Status",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("NAS-IP-Address", {
+    header: "IP",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("release-source", {
+    header: "Origem Desligamento",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("call-id", {
+    header: "Call-ID",
+    cell: (info) => info.getValue(),
+  }),
+];
+
+export default function BilhetesPage() {
+  const [data, setData] = useState<CallRecord[]>([]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 20,
+  });
+  const [totalPages, setTotalPages] = useState(0);
+  const [filters, setFilters] = useState({
+    callingPhone: "",
+    calledPhone: "",
+    anyPhone: "",
+    userName: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    state: {
+      pagination,
+    },
+    onPaginationChange: setPagination,
+    pageCount: totalPages,
+    manualPagination: true,
+  });
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        page: (pagination.pageIndex + 1).toString(),
+        perPage: pagination.pageSize.toString(),
+        ...(filters.anyPhone && { anyPhone: filters.anyPhone }),
+        ...(filters.callingPhone && { callingPhone: filters.callingPhone }),
+        ...(filters.calledPhone && { calledPhone: filters.calledPhone }),
+        ...(filters.userName && { userName: filters.userName }),
+        ...(filters.startDate && { startDate: filters.startDate }),
+        ...(filters.endDate && { endDate: filters.endDate }),
+      });
+
+      const response = await fetch(
+        `http://192.168.65.157:5000/bilhetes?${queryParams}`
+      );
+      const result: BilhetesResponse = await response.json();
+      console.log(result.data);
+
+      setData(result.data);
+      setTotalPages(result.totalPages);
+    } catch (error) {
+      console.error("Erro ao buscar dados:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [pagination.pageIndex, pagination.pageSize]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    table.setPageIndex(0);
+    fetchData();
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="container mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-6">Bilhetes</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <form
+        onSubmit={handleSearch}
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
+      >
+        <div>
+          <label className="block text-sm font-medium mb-1">Telefone</label>
+          <Input
+            type="text"
+            value={filters.anyPhone}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, anyPhone: e.target.value }))
+            }
+            placeholder="Número"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Calling</label>
+          <Input
+            type="text"
+            value={filters.callingPhone}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, callingPhone: e.target.value }))
+            }
+            placeholder="Calling"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Called</label>
+          <Input
+            type="text"
+            value={filters.calledPhone}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, calledPhone: e.target.value }))
+            }
+            placeholder="Called"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Nap</label>
+          <Input
+            type="text"
+            value={filters.userName}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, userName: e.target.value }))
+            }
+            placeholder="Nap"
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Data Início</label>
+          <Input
+            type="date"
+            value={filters.startDate}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, startDate: e.target.value }))
+            }
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Data Fim</label>
+          <Input
+            type="date"
+            value={filters.endDate}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, endDate: e.target.value }))
+            }
+          />
+        </div>
+
+        <Button type="submit" className="mt-6">
+          Buscar
+        </Button>
+      </form>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center">
+                  Carregando...
+                </TableCell>
+              </TableRow>
+            ) : data.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center">
+                  Nenhum registro encontrado
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} de{" "}
+          {table.getFilteredRowModel().rows.length} linha(s) selecionada(s).
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Próxima
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
