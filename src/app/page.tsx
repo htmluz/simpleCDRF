@@ -175,9 +175,14 @@ export default function BilhetesPage() {
     callingPhone: "",
     calledPhone: "",
     anyPhone: "",
-    userName: "",
+    napA: "",
+    napB: "",
     startDate: "",
     endDate: "",
+    disconnCause: "",
+    callId: "",
+    gatewayIp: "",
+    codec: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -203,7 +208,12 @@ export default function BilhetesPage() {
         ...(filters.anyPhone && { anyPhone: filters.anyPhone }),
         ...(filters.callingPhone && { callingPhone: filters.callingPhone }),
         ...(filters.calledPhone && { calledPhone: filters.calledPhone }),
-        ...(filters.userName && { userName: filters.userName }),
+        ...(filters.napA && { napA: filters.napA }),
+        ...(filters.napB && { napB: filters.napB }),
+        ...(filters.disconnCause && { disconnCause: filters.disconnCause }),
+        ...(filters.callId && { callId: filters.callId }),
+        ...(filters.gatewayIp && { gatewayIp: filters.gatewayIp }),
+        ...(filters.codec && { codec: filters.codec }),
         ...(filters.startDate && { startDate: filters.startDate }),
         ...(filters.endDate && { endDate: filters.endDate }),
       });
@@ -252,7 +262,6 @@ export default function BilhetesPage() {
             placeholder="Número"
           />
         </div>
-
         <div>
           <label className="block text-sm font-medium mb-1">Calling</label>
           <Input
@@ -264,7 +273,6 @@ export default function BilhetesPage() {
             placeholder="Calling"
           />
         </div>
-
         <div>
           <label className="block text-sm font-medium mb-1">Called</label>
           <Input
@@ -276,19 +284,74 @@ export default function BilhetesPage() {
             placeholder="Called"
           />
         </div>
-
         <div>
-          <label className="block text-sm font-medium mb-1">Nap</label>
+          <label className="block text-sm font-medium mb-1">Codec</label>
           <Input
             type="text"
-            value={filters.userName}
+            value={filters.codec}
             onChange={(e) =>
-              setFilters((prev) => ({ ...prev, userName: e.target.value }))
+              setFilters((prev) => ({ ...prev, codec: e.target.value }))
+            }
+            placeholder="Codec"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Nap A</label>
+          <Input
+            type="text"
+            value={filters.napA}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, napA: e.target.value }))
             }
             placeholder="Nap"
           />
         </div>
-
+        <div>
+          <label className="block text-sm font-medium mb-1">Nap B</label>
+          <Input
+            type="text"
+            value={filters.napB}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, napB: e.target.value }))
+            }
+            placeholder="Nap"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Call-ID</label>
+          <Input
+            type="text"
+            value={filters.callId}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, callId: e.target.value }))
+            }
+            placeholder="Call-ID"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Causa da Desconexão
+          </label>
+          <Input
+            type="text"
+            value={filters.disconnCause}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, disconnCause: e.target.value }))
+            }
+            placeholder="Causa da Desconexão"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Gateway</label>
+          <Input
+            type="text"
+            value={filters.gatewayIp}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, gatewayIp: e.target.value }))
+            }
+            placeholder="IP do Gateway"
+          />
+        </div>
         <div>
           <label className="block text-sm font-medium mb-1">Data Início</label>
           <Input
