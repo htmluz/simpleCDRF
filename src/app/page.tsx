@@ -29,17 +29,35 @@ import {
 } from "@/components/ui/select";
 
 interface CallRecord {
-  "User-Name": string;
-  "Calling-Station-Id": string;
-  "Called-Station-Id": string;
-  "h323-setup-time": string;
-  "h323-connect-time": string;
-  "h323-disconnect-time": string;
-  "h323-call-type": string;
+  "Acct-Session-Id": string;
   "Acct-Session-Time": string;
-  "h323-disconnect-cause": string;
+  "Acct-Session-Type": string;
+  "Called-Station-Id": string;
+  "Calling-Station-Id": string;
+  "Cisco-NAS-Port": string;
+  Codec: string;
+  "Local-RTP-IP": string;
+  "Local-RTP-Port": string;
+  "Local-SIP-IP": string;
+  "Local-SIP-Port": string;
+  "MOS-Egress": string;
+  "MOS-Ingress": string;
   "NAS-IP-Address": string;
+  "NAS-Identifier": string;
+  Protocol: string;
+  "Remote-RTP-IP": string;
+  "Remote-RTP-Port": string;
+  "Remote-SIP-IP": string;
+  "Remote-SIP-Port": string;
+  "Ring-Start": string;
+  "User-Name": string; //NapA
   "call-id": string;
+  "h323-call-origin": string;
+  "h323-call-type": string;
+  "h323-connect-time": string;
+  "h323-disconnect-cause": string;
+  "h323-disconnect-time": string;
+  "h323-setup-time": string;
   "release-source": string;
 }
 
@@ -54,6 +72,48 @@ interface BilhetesResponse {
 const columnHelper = createColumnHelper<CallRecord>();
 
 const columns = [
+  columnHelper.accessor("h323-setup-time", {
+    header: "Horário de Início",
+    cell: (info) => {
+      const isoString = info.getValue();
+      if (!isoString) return "";
+      return format(new Date(isoString), "dd/MM/yyyy HH:mm:ss");
+    },
+  }),
+  columnHelper.accessor("h323-disconnect-time", {
+    header: "Horário do Desligamento",
+    cell: (info) => {
+      const isoString = info.getValue();
+      if (!isoString) return "";
+      return format(new Date(isoString), "dd/MM/yyyy HH:mm:ss");
+    },
+  }),
+  columnHelper.accessor("Ring-Start", {
+    header: "Horário de Início do Áudio",
+    cell: (info) => {
+      const isoString = info.getValue();
+      if (!isoString) return "";
+      const datenow = new Date();
+      const date = new Date(isoString);
+      if (date.getFullYear() < datenow.getFullYear() - 100) {
+        return "";
+      }
+      return format(date, "dd/MM/yyyy HH:mm:ss");
+    },
+  }),
+  columnHelper.accessor("Acct-Session-Time", {
+    header: "Duração",
+    cell: (info) => {
+      const value = info.getValue();
+      if (value) {
+        const seconds = parseInt(info.getValue());
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+      }
+      return "";
+    },
+  }),
   columnHelper.accessor("Calling-Station-Id", {
     header: "Origem",
     cell: (info) => info.getValue(),
@@ -62,33 +122,24 @@ const columns = [
     header: "Destino",
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor("h323-setup-time", {
-    header: "Início",
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor("h323-disconnect-time", {
-    header: "Fim",
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor("Acct-Session-Time", {
-    header: "Duração",
-    cell: (info) => {
-      const seconds = parseInt(info.getValue());
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-    },
-  }),
   columnHelper.accessor("User-Name", {
-    header: "Nap",
+    header: "Nap Origem",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("Cisco-NAS-Port", {
+    header: "Nap Destino",
     cell: (info) => info.getValue(),
   }),
   columnHelper.accessor("h323-disconnect-cause", {
     header: "Status",
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor("NAS-IP-Address", {
-    header: "IP",
+  columnHelper.accessor("Codec", {
+    header: "Codec",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("h323-call-origin", {
+    header: "Call origin",
     cell: (info) => info.getValue(),
   }),
   columnHelper.accessor("release-source", {
@@ -97,6 +148,18 @@ const columns = [
   }),
   columnHelper.accessor("call-id", {
     header: "Call-ID",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("MOS-Egress", {
+    header: "MOS Tx",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("MOS-Ingress", {
+    header: "MOS Rx",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("NAS-IP-Address", {
+    header: "Gateway",
     cell: (info) => info.getValue(),
   }),
 ];
@@ -229,7 +292,7 @@ export default function BilhetesPage() {
         <div>
           <label className="block text-sm font-medium mb-1">Data Início</label>
           <Input
-            type="date"
+            type="datetime-local"
             value={filters.startDate}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, startDate: e.target.value }))
@@ -240,7 +303,7 @@ export default function BilhetesPage() {
         <div>
           <label className="block text-sm font-medium mb-1">Data Fim</label>
           <Input
-            type="date"
+            type="datetime-local"
             value={filters.endDate}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, endDate: e.target.value }))
