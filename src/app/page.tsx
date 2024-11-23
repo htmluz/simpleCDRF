@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   useReactTable,
   createColumnHelper,
   getCoreRowModel,
   getPaginationRowModel,
-  ColumnDef,
   flexRender,
 } from "@tanstack/react-table";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -20,13 +20,6 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface CallRecord {
   "Acct-Session-Id": string;
@@ -219,7 +212,7 @@ export default function BilhetesPage() {
       });
 
       const response = await fetch(
-        `http://192.168.65.157:5000/bilhetes?${queryParams}`
+        `http://10.90.0.100:5000/bilhetes?${queryParams}`
       );
       const result: BilhetesResponse = await response.json();
       console.log(result.data);
@@ -245,8 +238,12 @@ export default function BilhetesPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">Bilhetes</h1>
-
+      <div className="mb-6 flex justify-between">
+        <h1 className="text-2xl font-bold">Bilhetes</h1>
+        <Link href="/configs">
+          <Button>Configs</Button>
+        </Link>
+      </div>
       <form
         onSubmit={handleSearch}
         className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
