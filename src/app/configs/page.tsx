@@ -21,7 +21,7 @@ export default function Configs() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://192.168.65.157:5000/rotinas/limpezadias`
+        `http://10.90.0.100:5000/rotinas/limpezadias`
       );
       const result: RotinasResponse = await response.json();
       setRotinasData(result);
@@ -41,7 +41,7 @@ export default function Configs() {
   // TODO tratar response
   const handleSubmit = () => {
     try {
-      fetch("http://192.168.65.157:5000/rotinas/limpezadias", {
+      fetch("http://10.90.0.100:5000/rotinas/limpezadias", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -126,8 +126,7 @@ export default function Configs() {
               {selectedTab === "usuarios" && (
                 <div>
                   <ul>
-                    <li>pipokinha123</li>
-                    <li>GroToziKNTC</li>
+                    <li></li>
                   </ul>
                 </div>
               )}
