@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Success from "@/components/ui/success";
 import { format } from "date-fns";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
+import Failure from "@/components/ui/failure";
+import LoadingButton from "@/components/ui/loadingbutton";
 
 interface RotinasResponse {
   days: number;
@@ -16,6 +19,9 @@ export default function Configs() {
   const [rotinasData, setRotinasData] = useState<RotinasResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isChanged, setIsChanged] = useState(false);
+  const [status, setStatus] = useState<
+    "idle" | "success" | "failure" | "loading"
+  >("idle");
 
   const fetchRotinaData = async () => {
     setIsLoading(true);
@@ -38,19 +44,34 @@ export default function Configs() {
     setRotinasData((prev) => (prev ? { ...prev, days: d } : prev));
   };
 
-  // TODO tratar response
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      fetch("http://10.90.0.100:5000/rotinas/limpezadias", {
+      setStatus("loading");
+      const r = await fetch("http://10.90.0.100:5000/rotinas/limpezadias", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ days: rotinasData?.days }),
       });
+      if (r.ok) {
+        setStatus("success");
+        resetStatus();
+      } else {
+        setStatus("failure");
+        resetStatus();
+      }
     } catch (error) {
       console.error(error);
+      setStatus("failure");
+      resetStatus();
     }
+  };
+
+  const resetStatus = () => {
+    setTimeout(() => {
+      setStatus("idle");
+    }, 5000);
   };
 
   useEffect(() => {
@@ -110,13 +131,30 @@ export default function Configs() {
                           )}
                         </p>
                       </div>
-                      <Button
-                        onClick={handleSubmit}
-                        disabled={!isChanged}
-                        className="absolute bottom-6 right-6"
-                      >
-                        Alterar
-                      </Button>
+                      {status === "idle" && (
+                        <Button
+                          onClick={handleSubmit}
+                          disabled={!isChanged}
+                          className="absolute bottom-6 right-6"
+                        >
+                          Alterar
+                        </Button>
+                      )}
+                      {status === "loading" && (
+                        <div className="absolute bottom-6 right-6">
+                          <LoadingButton></LoadingButton>
+                        </div>
+                      )}
+                      {status === "success" && (
+                        <div className="absolute bottom-6 right-6">
+                          <Success></Success>
+                        </div>
+                      )}
+                      {status === "failure" && (
+                        <div className="absolute bottom-6 right-6">
+                          <Failure></Failure>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <p></p>

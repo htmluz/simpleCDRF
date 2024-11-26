@@ -20,6 +20,13 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CallRecord {
   "Acct-Session-Id": string;
@@ -161,9 +168,10 @@ export default function BilhetesPage() {
   const [data, setData] = useState<CallRecord[]>([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 20,
+    pageSize: 25,
   });
   const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({
     callingPhone: "",
     calledPhone: "",
@@ -219,11 +227,19 @@ export default function BilhetesPage() {
 
       setData(result.data);
       setTotalPages(result.totalPages);
+      setTotal(result.total);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    setPagination((prev) => ({
+      ...prev,
+      pageSize: parseInt(value, 10),
+    }));
   };
 
   useEffect(() => {
@@ -260,25 +276,25 @@ export default function BilhetesPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Calling</label>
+          <label className="block text-sm font-medium mb-1">Origem</label>
           <Input
             type="text"
             value={filters.callingPhone}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, callingPhone: e.target.value }))
             }
-            placeholder="Calling"
+            placeholder="Origem"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Called</label>
+          <label className="block text-sm font-medium mb-1">Destino</label>
           <Input
             type="text"
             value={filters.calledPhone}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, calledPhone: e.target.value }))
             }
-            placeholder="Called"
+            placeholder="Destino"
           />
         </div>
         <div>
@@ -425,10 +441,22 @@ export default function BilhetesPage() {
 
       <div className="flex items-center justify-between space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} de{" "}
-          {table.getFilteredRowModel().rows.length} linha(s) selecionada(s).
+          {total} registros. {table.getPageCount()} Páginas
         </div>
         <div className="flex items-center space-x-2">
+          <div className="space-y-2">
+            <Select defaultValue="25" onValueChange={handlePageSizeChange}>
+              <SelectTrigger id="select-15">
+                <SelectValue>{pagination.pageSize}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="500">500</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             variant="outline"
             size="sm"
