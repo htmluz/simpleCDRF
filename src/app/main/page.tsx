@@ -172,13 +172,16 @@ export default function BilhetesPage() {
   });
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
+  const today = new Date();
   const [filters, setFilters] = useState({
     callingPhone: "",
     calledPhone: "",
     anyPhone: "",
     napA: "",
     napB: "",
-    startDate: "",
+    startDate: new Date(today.getTime() - 8 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 16),
     endDate: "",
     disconnCause: "",
     callId: "",
@@ -200,9 +203,16 @@ export default function BilhetesPage() {
     manualPagination: true,
   });
 
+  const addHours = (dateString: string, hours: number): string => {
+    const date = new Date(dateString);
+    date.setHours(date.getHours() + hours);
+    return date.toISOString().slice(0, 16);
+  };
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
+      console.log(filters);
       const queryParams = new URLSearchParams({
         page: (pagination.pageIndex + 1).toString(),
         perPage: pagination.pageSize.toString(),
@@ -215,8 +225,8 @@ export default function BilhetesPage() {
         ...(filters.callId && { callId: filters.callId }),
         ...(filters.gatewayIp && { gatewayIp: filters.gatewayIp }),
         ...(filters.codec && { codec: filters.codec }),
-        ...(filters.startDate && { startDate: filters.startDate }),
-        ...(filters.endDate && { endDate: filters.endDate }),
+        ...(filters.startDate && { startDate: addHours(filters.startDate, 0) }),
+        ...(filters.endDate && { endDate: addHours(filters.endDate, 0) }),
       });
 
       const response = await fetch(
