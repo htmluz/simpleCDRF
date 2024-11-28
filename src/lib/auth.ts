@@ -41,7 +41,7 @@ export async function refreshAccessToken() {
   if (!refresh_token) {
     throw new Error("No refresh token available");
   }
-  const r = await fetch("http://192.168.65.157:5000/refresh", {
+  const r = await fetch("http://10.90.0.100:5000/refresh", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh_token }),

@@ -9,7 +9,9 @@ import UserSettings from "@/components/users";
 
 export default function Configs() {
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<string>("usuarios");
+  const [selectedTab, setSelectedTab] = useState<
+    "usuarios" | "gateways" | "rotinas"
+  >("usuarios");
 
   useEffect(() => {
     const { access_token } = getTokens();
@@ -26,12 +28,20 @@ export default function Configs() {
         </Link>
         <div className="w-1/4 bg-gray-200 select-none p-4 flex flex-col space-y-4">
           {userRole == "admin" ? (
-            <Button
-              variant={selectedTab === "rotinas" ? "default" : "outline"}
-              onClick={() => setSelectedTab("rotinas")}
-            >
-              Armazenamento
-            </Button>
+            <>
+              <Button
+                variant={selectedTab === "rotinas" ? "default" : "outline"}
+                onClick={() => setSelectedTab("rotinas")}
+              >
+                Armazenamento
+              </Button>
+              <Button
+                variant={selectedTab === "gateways" ? "default" : "outline"}
+                onClick={() => setSelectedTab("gateways")}
+              >
+                Gateways
+              </Button>
+            </>
           ) : (
             <></>
           )}
