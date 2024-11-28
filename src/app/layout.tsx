@@ -47,6 +47,7 @@ export default function RootLayout({
           setUserRole(getUserRole(new_access_token));
         } catch (error) {
           clearTokens();
+          console.error(error);
           router.push("/login");
         }
       } else {

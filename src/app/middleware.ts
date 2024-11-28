@@ -23,6 +23,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   } catch (error) {
+    console.error(error);
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

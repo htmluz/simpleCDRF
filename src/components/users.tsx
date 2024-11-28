@@ -139,7 +139,6 @@ export default function UserSettings() {
             role: userChange?.role,
           }),
         });
-        console.log(r);
         if (r.ok) {
           setStatus("success");
           resetStatus();

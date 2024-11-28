@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import LoadingButton from "./ui/loadingbutton";
 import Failure from "./ui/failure";
 import Success from "./ui/success";
+import { refreshAccessToken } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 interface RotinasResponse {
   days: number;
@@ -17,6 +19,7 @@ export default function StorageSettings() {
   const [status, setStatus] = useState<
     "idle" | "success" | "failure" | "loading"
   >("idle");
+  const router = useRouter();
 
   useEffect(() => {
     fetchRotinaData();
@@ -24,17 +27,31 @@ export default function StorageSettings() {
 
   const fetchRotinaData = async () => {
     setStatus("loading");
-    try {
+    const makeRequest = async () => {
       const response = await fetch(
         `http://10.90.0.100:5000/rotinas/limpezadias`
       );
-      const result: RotinasResponse = await response.json();
+      if (response.status === 401) {
+        const new_access_token = await refreshAccessToken();
+        if (new_access_token) {
+          return makeRequest();
+        } else {
+          router.push("/login");
+          return null;
+        }
+      }
+      if (!response.ok) {
+        console.error(`Erro ${response.status}`);
+        router.push("/login");
+        return null;
+      }
+      return response.json();
+    };
+    const result: RotinasResponse = await makeRequest();
+    if (result) {
       setRotinasData(result);
-    } catch (error) {
-      console.error("Erro ao buscar dados:", error);
-    } finally {
-      setStatus("idle");
     }
+    setStatus("idle");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +66,7 @@ export default function StorageSettings() {
     }, 5000);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit2 = async () => {
     try {
       setStatus("loading");
       const r = await fetch("http://10.90.0.100:5000/rotinas/limpezadias", {
@@ -68,6 +85,42 @@ export default function StorageSettings() {
       }
     } catch (error) {
       console.error(error);
+      setStatus("failure");
+      resetStatus();
+    }
+  };
+
+  const handleSubmit = async () => {
+    setStatus("loading");
+    const makeRequest = async () => {
+      const r = await fetch("http://10.90.0.100:5000/rotinas/limpezadias", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ days: rotinasData?.days }),
+      });
+      if (r.status === 401) {
+        const new_access_token = await refreshAccessToken();
+        if (new_access_token) {
+          return makeRequest();
+        } else {
+          router.push("/login");
+          return null;
+        }
+      }
+      if (!r.ok) {
+        console.error(`Erro ${r.status}`);
+        router.push("/login");
+        return null;
+      }
+      return r.json();
+    };
+    const result = await makeRequest();
+    if (result) {
+      setStatus("success");
+      resetStatus();
+    } else {
       setStatus("failure");
       resetStatus();
     }

@@ -27,6 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
+import { refreshAccessToken } from "@/lib/auth";
 
 interface CallRecord {
   "Acct-Session-Id": string;
@@ -189,6 +191,7 @@ export default function BilhetesPage() {
     codec: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const table = useReactTable({
     data,
@@ -211,38 +214,49 @@ export default function BilhetesPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    try {
-      console.log(filters);
-      const queryParams = new URLSearchParams({
-        page: (pagination.pageIndex + 1).toString(),
-        perPage: pagination.pageSize.toString(),
-        ...(filters.anyPhone && { anyPhone: filters.anyPhone }),
-        ...(filters.callingPhone && { callingPhone: filters.callingPhone }),
-        ...(filters.calledPhone && { calledPhone: filters.calledPhone }),
-        ...(filters.napA && { napA: filters.napA }),
-        ...(filters.napB && { napB: filters.napB }),
-        ...(filters.disconnCause && { disconnCause: filters.disconnCause }),
-        ...(filters.callId && { callId: filters.callId }),
-        ...(filters.gatewayIp && { gatewayIp: filters.gatewayIp }),
-        ...(filters.codec && { codec: filters.codec }),
-        ...(filters.startDate && { startDate: addHours(filters.startDate, 0) }),
-        ...(filters.endDate && { endDate: addHours(filters.endDate, 0) }),
-      });
 
+    const queryParams = new URLSearchParams({
+      page: (pagination.pageIndex + 1).toString(),
+      perPage: pagination.pageSize.toString(),
+      ...(filters.anyPhone && { anyPhone: filters.anyPhone }),
+      ...(filters.callingPhone && { callingPhone: filters.callingPhone }),
+      ...(filters.calledPhone && { calledPhone: filters.calledPhone }),
+      ...(filters.napA && { napA: filters.napA }),
+      ...(filters.napB && { napB: filters.napB }),
+      ...(filters.disconnCause && { disconnCause: filters.disconnCause }),
+      ...(filters.callId && { callId: filters.callId }),
+      ...(filters.gatewayIp && { gatewayIp: filters.gatewayIp }),
+      ...(filters.codec && { codec: filters.codec }),
+      ...(filters.startDate && { startDate: addHours(filters.startDate, 0) }),
+      ...(filters.endDate && { endDate: addHours(filters.endDate, 0) }),
+    });
+    const makeRequest = async () => {
       const response = await fetch(
         `http://10.90.0.100:5000/bilhetes?${queryParams}`
       );
-      const result: BilhetesResponse = await response.json();
-      console.log(result.data);
-
+      if (response.status === 401) {
+        const new_access_token = await refreshAccessToken();
+        if (new_access_token) {
+          return makeRequest();
+        } else {
+          router.push("/login");
+          return null;
+        }
+      }
+      if (!response.ok) {
+        console.error(`Erro ${response.status}`);
+        router.push("/login");
+        return null;
+      }
+      return response.json();
+    };
+    const result: BilhetesResponse = await makeRequest();
+    if (result) {
       setData(result.data);
       setTotalPages(result.totalPages);
       setTotal(result.total);
-    } catch (error) {
-      console.error("Erro ao buscar dados:", error);
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   const handlePageSizeChange = (value: string) => {
