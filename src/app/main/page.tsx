@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { refreshAccessToken } from "@/lib/auth";
+import { ThemeToggle } from "@/components/themetoggle";
 
 interface CallRecord {
   "Acct-Session-Id": string;
@@ -280,6 +281,7 @@ export default function BilhetesPage() {
     <div className="container mx-auto py-10">
       <div className="mb-6 flex justify-between">
         <h1 className="text-2xl font-bold">Bilhetes</h1>
+        <ThemeToggle />
         <Link href="/configs">
           <Button>Configs</Button>
         </Link>

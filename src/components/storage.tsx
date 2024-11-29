@@ -66,30 +66,6 @@ export default function StorageSettings() {
     }, 5000);
   };
 
-  const handleSubmit2 = async () => {
-    try {
-      setStatus("loading");
-      const r = await fetch("http://10.90.0.100:5000/rotinas/limpezadias", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ days: rotinasData?.days }),
-      });
-      if (r.ok) {
-        setStatus("success");
-        resetStatus();
-      } else {
-        setStatus("failure");
-        resetStatus();
-      }
-    } catch (error) {
-      console.error(error);
-      setStatus("failure");
-      resetStatus();
-    }
-  };
-
   const handleSubmit = async () => {
     setStatus("loading");
     const makeRequest = async () => {

@@ -154,6 +154,15 @@ export default function UserSettings() {
     }
   };
 
+  useEffect(() => {
+    const theme = localStorage.getItem("theme");
+    if (theme) {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(theme);
+    }
+  }, []);
+
   return (
     <>
       <form onSubmit={handleSubmit}>
@@ -211,7 +220,7 @@ export default function UserSettings() {
           )}
         </div>
       </form>
-      <div className="bg-gray-100 rounded-lg shadow-inner h-[90%] px-2">
+      <div className="bg-gray-100 dark:bg-neutral-900 rounded-lg shadow-inner h-[90%] px-2">
         {usersData && usersData.length > 0 ? (
           <table className="w-full">
             <thead>
@@ -225,14 +234,18 @@ export default function UserSettings() {
               {usersData.map((user, idx) => (
                 <tr
                   key={idx}
-                  className="hover:bg-gray-200 transition-colors rounded-xl hover:shadow-sm select-none"
+                  className="hover:bg-gray-200 dark:hover:bg-neutral-800 transition-colors rounded-xl hover:shadow-sm select-none"
                 >
-                  <td className="py-1 text-neutral-800">{user.username}</td>
-                  <td className="text-neutral-800">{user.role}</td>
+                  <td className="py-1 text-neutral-800 dark:text-neutral-200">
+                    {user.username}
+                  </td>
+                  <td className="text-neutral-800 dark:text-neutral-200">
+                    {user.role}
+                  </td>
                   <td>
                     {userOwnInfo?.role === "admin" && (
                       <UserPen
-                        className="text-neutral-600 hover:text-neutral-900 transition-colors"
+                        className="text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
                         onClick={() => handleEditUser(user.username, user.role)}
                       />
                     )}

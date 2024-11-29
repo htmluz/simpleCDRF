@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { setTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface loginResponse {
   access_token: string;
@@ -15,6 +15,15 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const theme = localStorage.getItem("theme");
+    if (theme) {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(theme);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +42,9 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="flex flex-col w-[600px] p-6 rounded-lg shadow-lg overflow-hidden bg-white">
-        <h1 className="text-2xl font-bold mb-6">:3:3:3</h1>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-neutral-900">
+      <div className="flex flex-col w-[600px] p-6 rounded-lg shadow-lg overflow-hidden bg-white dark:bg-black">
+        <h1 className="text-2xl font-bold mb-6">CDRs Unifique</h1>
         <form onSubmit={handleSubmit}>
           <div className="space-y-6 mb-6">
             <Input
