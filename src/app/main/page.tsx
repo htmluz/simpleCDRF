@@ -30,6 +30,7 @@ import {
 import { useRouter } from "next/navigation";
 import { refreshAccessToken } from "@/lib/auth";
 import { ThemeToggle } from "@/components/themetoggle";
+import { API_BASE_URL } from "@/lib/config";
 
 interface CallRecord {
   "Acct-Session-Id": string;
@@ -62,6 +63,7 @@ interface CallRecord {
   "h323-disconnect-time": string;
   "h323-setup-time": string;
   "release-source": string;
+  "Gw-Name": string;
 }
 
 interface BilhetesResponse {
@@ -161,7 +163,7 @@ const columns = [
     header: "MOS Rx",
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor("NAS-IP-Address", {
+  columnHelper.accessor((row) => row["Gw-Name"] ?? row["NAS-IP-Address"], {
     header: "Gateway",
     cell: (info) => info.getValue(),
   }),
@@ -232,9 +234,7 @@ export default function BilhetesPage() {
       ...(filters.endDate && { endDate: addHours(filters.endDate, 0) }),
     });
     const makeRequest = async () => {
-      const response = await fetch(
-        `http://10.90.0.100:5000/bilhetes?${queryParams}`
-      );
+      const response = await fetch(`${API_BASE_URL}/bilhetes?${queryParams}`);
       if (response.status === 401) {
         const new_access_token = await refreshAccessToken();
         if (new_access_token) {

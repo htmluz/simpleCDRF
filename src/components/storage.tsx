@@ -7,6 +7,7 @@ import Failure from "./ui/failure";
 import Success from "./ui/success";
 import { refreshAccessToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/config";
 
 interface RotinasResponse {
   days: number;
@@ -28,9 +29,7 @@ export default function StorageSettings() {
   const fetchRotinaData = async () => {
     setStatus("loading");
     const makeRequest = async () => {
-      const response = await fetch(
-        `http://10.90.0.100:5000/rotinas/limpezadias`
-      );
+      const response = await fetch(`${API_BASE_URL}/rotinas/limpezadias`);
       if (response.status === 401) {
         const new_access_token = await refreshAccessToken();
         if (new_access_token) {
@@ -69,7 +68,7 @@ export default function StorageSettings() {
   const handleSubmit = async () => {
     setStatus("loading");
     const makeRequest = async () => {
-      const r = await fetch("http://10.90.0.100:5000/rotinas/limpezadias", {
+      const r = await fetch(`${API_BASE_URL}/rotinas/limpezadias`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

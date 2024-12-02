@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getTokens, getUserRole } from "@/lib/auth";
 import StorageSettings from "@/components/storage";
 import UserSettings from "@/components/users";
+import GatewaysSettings from "@/components/gateways";
 
 export default function Configs() {
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -61,6 +62,7 @@ export default function Configs() {
         <div className="flex-1 p-6 bg-white dark:bg-black relative">
           {selectedTab === "rotinas" && <StorageSettings />}
           {selectedTab === "usuarios" && <UserSettings />}
+          {selectedTab === "gateways" && <GatewaysSettings />}
         </div>
       </div>
     </div>

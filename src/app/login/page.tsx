@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { setTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "@/lib/config";
 
 interface loginResponse {
   access_token: string;
@@ -27,7 +28,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const r = await fetch("http://10.90.0.100:5000/login", {
+    const r = await fetch(`${API_BASE_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),

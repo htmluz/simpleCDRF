@@ -12,6 +12,7 @@ import { getTokens, getUserName, getUserRole } from "@/lib/auth";
 import Success from "./ui/success";
 import Failure from "./ui/failure";
 import { UserPen } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 
 interface User {
   username: string | null;
@@ -42,7 +43,7 @@ export default function UserSettings() {
   const fetchUsersData = async () => {
     setStatus("loading");
     try {
-      const response = await fetch(`http://10.90.0.100:5000/users`);
+      const response = await fetch(`${API_BASE_URL}/users`);
       const result: User[] = await response.json();
       setUsersData(result);
     } catch (error) {
@@ -106,7 +107,7 @@ export default function UserSettings() {
       //alterando só senha
       try {
         setStatus("loading");
-        const r = await fetch("http://10.90.0.100:5000/user/password", {
+        const r = await fetch(`${API_BASE_URL}/user/password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -130,7 +131,7 @@ export default function UserSettings() {
       //novo usuario
       try {
         setStatus("loading");
-        const r = await fetch("http://10.90.0.100:5000/register", {
+        const r = await fetch(`${API_BASE_URL}/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
