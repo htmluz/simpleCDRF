@@ -163,10 +163,16 @@ const columns = [
     header: "MOS Rx",
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor((row) => row["Gw-Name"] ?? row["NAS-IP-Address"], {
-    header: "Gateway",
-    cell: (info) => info.getValue(),
-  }),
+  columnHelper.accessor(
+    (row) => ({ gwName: row["Gw-Name"], nasIpAddress: row["NAS-IP-Address"] }),
+    {
+      header: "Gateway",
+      cell: (info) => {
+        const { gwName, nasIpAddress } = info.getValue();
+        return gwName && gwName.trim() !== "" ? gwName : nasIpAddress;
+      },
+    }
+  ),
 ];
 
 export default function BilhetesPage() {

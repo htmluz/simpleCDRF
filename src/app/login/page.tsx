@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { setTokens } from "@/lib/auth";
+import { API_BASE_URL } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "@/lib/config";
 
 interface loginResponse {
   access_token: string;
