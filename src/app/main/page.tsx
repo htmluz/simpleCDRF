@@ -31,40 +31,7 @@ import { useRouter } from "next/navigation";
 import { refreshAccessToken } from "@/lib/auth";
 import { ThemeToggle } from "@/components/themetoggle";
 import { API_BASE_URL } from "@/lib/config";
-
-interface CallRecord {
-  "Acct-Session-Id": string;
-  "Acct-Session-Time": string;
-  "Acct-Session-Type": string;
-  "Called-Station-Id": string;
-  "Calling-Station-Id": string;
-  "Cisco-NAS-Port": string;
-  Codec: string;
-  "Local-RTP-IP": string;
-  "Local-RTP-Port": string;
-  "Local-SIP-IP": string;
-  "Local-SIP-Port": string;
-  "MOS-Egress": string;
-  "MOS-Ingress": string;
-  "NAS-IP-Address": string;
-  "NAS-Identifier": string;
-  Protocol: string;
-  "Remote-RTP-IP": string;
-  "Remote-RTP-Port": string;
-  "Remote-SIP-IP": string;
-  "Remote-SIP-Port": string;
-  "Ring-Start": string;
-  "User-Name": string; //NapA
-  "call-id": string;
-  "h323-call-origin": string;
-  "h323-call-type": string;
-  "h323-connect-time": string;
-  "h323-disconnect-cause": string;
-  "h323-disconnect-time": string;
-  "h323-setup-time": string;
-  "release-source": string;
-  "Gw-Name": string;
-}
+import { CallRecord } from "@/models/bilhetes";
 
 interface BilhetesResponse {
   data: CallRecord[];
@@ -287,10 +254,15 @@ export default function BilhetesPage() {
     <div className="container mx-auto py-10">
       <div className="mb-6 flex justify-between">
         <h1 className="text-2xl font-bold">Bilhetes</h1>
-        <ThemeToggle />
-        <Link href="/configs">
-          <Button>Configs</Button>
-        </Link>
+        <div className="flex space-x-2">
+          <ThemeToggle />
+          <Link href="/configs">
+            <Button>Configs</Button>
+          </Link>
+          <Link href="/live">
+            <Button>Live view</Button>
+          </Link>
+        </div>
       </div>
       <form
         onSubmit={handleSearch}

@@ -117,7 +117,7 @@ export default function StorageSettings() {
             <p>dias.</p>
           </div>
           <div className="flex items-center">
-            <p className="text-sm italic text-gray-800 select-none">
+            <p className="text-sm italic text-gray-800 dark:text-gray-400 select-none">
               Atualizado a última vez em{" "}
               {format(new Date(rotinasData.updated_at), "dd/MM/yyyy HH:mm")}
             </p>
