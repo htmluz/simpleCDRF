@@ -4,7 +4,7 @@ import { API_BASE_URL } from "@/lib/config";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CallRecord } from "@/models/bilhetes";
+import { CallRecord, CallRecordFull } from "@/models/bilhetes";
 import {
   Table,
   TableBody,
@@ -17,12 +17,12 @@ import { convertToIsoGMTMinus3, formatDate } from "@/utils/dateUtils";
 
 interface EventResponse {
   count: number;
-  calls: CallRecord[];
+  calls: CallRecordFull[];
 }
 
 export default function BasicEventStreamViewer() {
   const [count, setCount] = useState<number>(0);
-  const [calls, setCalls] = useState<CallRecord[]>([]);
+  const [calls, setCalls] = useState<CallRecordFull[]>([]);
 
   useEffect(() => {
     const eventSource = new EventSource(`${API_BASE_URL}/bilhetes/live`);
@@ -61,6 +61,7 @@ export default function BasicEventStreamViewer() {
       </div>
       <h2 className="text-xl font-bold mb-4">Chamadas Ativas: {count}</h2>
       <div className="bg-gray-100 dark:bg-neutral-900 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
+        {/* 
         <Table>
           <TableHeader>
             <TableRow>
@@ -100,6 +101,7 @@ export default function BasicEventStreamViewer() {
             )}
           </TableBody>
         </Table>
+        */}
       </div>
     </div>
   );

@@ -31,3 +31,9 @@ export interface CallRecord {
   "release-source": string;
   "Gw-Name": string;
 }
+
+export interface CallRecordFull {
+  Bid: string;
+  LegA: CallRecord;
+  LegB: CallRecord;
+}
