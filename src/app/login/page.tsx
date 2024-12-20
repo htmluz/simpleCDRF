@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Failure from "@/components/ui/failure";
 import { Input } from "@/components/ui/input";
 import { setTokens } from "@/lib/auth";
 import { API_BASE_URL } from "@/lib/config";
@@ -15,7 +16,16 @@ interface loginResponse {
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "success" | "failure" | "loading"
+  >("idle");
   const router = useRouter();
+
+  const resetStatus = () => {
+    setTimeout(() => {
+      setStatus("idle");
+    }, 5000);
+  };
 
   useEffect(() => {
     const theme = localStorage.getItem("theme");
@@ -38,7 +48,8 @@ export default function Login() {
       setTokens(access_token, refresh_token);
       router.push("/main");
     } else {
-      console.error("falha no login");
+      setStatus("failure");
+      resetStatus();
     }
   };
 
@@ -63,9 +74,13 @@ export default function Login() {
               required
             ></Input>
           </div>
-          <Button className="w-[100%]" type="submit">
-            Entrar
-          </Button>
+          {status === "idle" ? (
+            <Button className="w-[100%]" type="submit">
+              Entrar
+            </Button>
+          ) : (
+            <Failure />
+          )}
         </form>
       </div>
     </div>

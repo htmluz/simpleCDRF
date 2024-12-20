@@ -1,19 +1,17 @@
 "use client";
 
 import { API_BASE_URL } from "@/lib/config";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CallRecord, CallRecordFull } from "@/models/bilhetes";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { CallRecordFull } from "@/models/bilhetes";
 import { convertToIsoGMTMinus3, formatDate } from "@/utils/dateUtils";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 interface EventResponse {
   count: number;
@@ -23,6 +21,32 @@ interface EventResponse {
 export default function BasicEventStreamViewer() {
   const [count, setCount] = useState<number>(0);
   const [calls, setCalls] = useState<CallRecordFull[]>([]);
+  const previousCallsRef = useRef<{ [key: string]: CallRecordFull }>({});
+
+  const updateCalls = useCallback((newCalls: CallRecordFull[]) => {
+    setCalls((prevCalls) => {
+      const updatedCalls: CallRecordFull[] = [];
+      const newCallsMap: { [key: string]: CallRecordFull } = {};
+      newCalls.forEach((call) => {
+        newCallsMap[call.Bid] = call;
+      });
+      prevCalls.forEach((call) => {
+        if (newCallsMap[call.Bid]) {
+          updatedCalls.push(newCallsMap[call.Bid]);
+          delete newCallsMap[call.Bid];
+        }
+      });
+      Object.values(newCallsMap).forEach((call) => {
+        updatedCalls.push(call);
+      });
+      previousCallsRef.current = updatedCalls.reduce((acc, call) => {
+        acc[call.Bid] = call;
+        return acc;
+      }, {} as { [key: string]: CallRecordFull });
+
+      return updatedCalls;
+    });
+  }, []);
 
   useEffect(() => {
     const eventSource = new EventSource(`${API_BASE_URL}/bilhetes/live`);
@@ -32,7 +56,7 @@ export default function BasicEventStreamViewer() {
         const eventData: EventResponse = JSON.parse(event.data);
         setCount(eventData.count);
         if (eventData.calls) {
-          setCalls(eventData.calls);
+          updateCalls(eventData.calls);
         } else {
           setCalls([]);
         }
@@ -59,49 +83,101 @@ export default function BasicEventStreamViewer() {
           <Button>Voltar</Button>
         </Link>
       </div>
+
       <h2 className="text-xl font-bold mb-4">Chamadas Ativas: {count}</h2>
-      <div className="bg-gray-100 dark:bg-neutral-900 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
-        {/* 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Origem</TableHead>
-              <TableHead>Destino</TableHead>
-              <TableHead>Início da Chamada</TableHead>
-              <TableHead>Início do Ring</TableHead>
-              <TableHead>Codec</TableHead>
-              <TableHead>RTP</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {calls.length > 0 ? (
-              <>
-                {calls.map((call, index) => (
-                  <TableRow>
-                    <TableCell>{call["Calling-Station-Id"]}</TableCell>
-                    <TableCell>{call["Called-Station-Id"]}</TableCell>
-                    <TableCell>
-                      {formatDate(
-                        convertToIsoGMTMinus3(call["h323-setup-time"])
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(convertToIsoGMTMinus3(call["Ring-Start"]))}
-                    </TableCell>
-                    <TableCell>{call["Codec"]}</TableCell>
-                    <TableCell>
-                      {call["Local-RTP-IP"]}:{call["Local-RTP-Port"]}⇆
-                      {call["Remote-RTP-IP"]}:{call["Remote-RTP-Port"]}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </>
-            ) : (
-              <></>
-            )}
-          </TableBody>
-        </Table>
-        */}
+
+      <div className="bg-gray-100 dark:bg-neutral-900 p-4 rounded-lg">
+        <div className="w-full grid grid-cols-4 mb-2 border rounded-lg px-4 py-2 select-none">
+          <p>Origem</p>
+          <p>Destino</p>
+          <p>Início da Ligação</p>
+          <p>Início do Áudio</p>
+        </div>
+        <div className="overflow-x-auto">
+          {calls.length > 0 ? (
+            calls.map((call, index) => (
+              <Accordion
+                type="single"
+                collapsible
+                key={call.Bid}
+                className="mb-2"
+              >
+                <AccordionItem
+                  value={`item-${index}`}
+                  className="border rounded-lg"
+                >
+                  <AccordionTrigger className="hover:no-underline w-full">
+                    <div className="grid grid-cols-4 w-full gap-4 px-4 ">
+                      <div>{call.LegA?.["Calling-Station-Id"]}</div>
+                      <div>{call.LegA?.["Called-Station-Id"]}</div>
+                      <div>
+                        {formatDate(
+                          convertToIsoGMTMinus3(call.LegA?.["h323-setup-time"])
+                        )}
+                      </div>
+                      <div>
+                        {formatDate(
+                          convertToIsoGMTMinus3(call.LegA?.["Ring-Start"])
+                        )}
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+
+                  <AccordionContent>
+                    <div className="grid grid-cols-2 gap-2 p-4 bg-gray-50 dark:bg-neutral-800 rounded-b-lg">
+                      <div>
+                        <h3 className="font-bold mb-1">LegA</h3>
+                        <p>Nap Origem: {call.LegA?.["Cisco-NAS-Port"]}</p>
+                        <p className="">Codec: {call.LegA?.Codec}</p>
+                        <p>
+                          RTP: {call.LegA?.["Local-RTP-IP"]}:
+                          {call.LegA?.["Local-RTP-Port"]} ⇆{" "}
+                          {call.LegA?.["Remote-RTP-IP"]}:
+                          {call.LegA?.["Remote-RTP-Port"]}
+                        </p>
+                        <p>
+                          SIP: {call.LegA?.["Local-SIP-IP"]}:
+                          {call.LegA?.["Local-SIP-Port"]} ⇆{" "}
+                          {call.LegA?.["Remote-SIP-IP"]}:
+                          {call.LegA?.["Remote-SIP-Port"]}
+                        </p>
+                        <p>Call-ID: {call.LegA?.["call-id"]}</p>
+                        <p>
+                          Disconnect-Cause:{" "}
+                          {call.LegA?.["h323-disconnect-cause"]}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="font-bold mb-1">LegB</h3>
+                        <p>Nap Destino: {call.LegB?.["Cisco-NAS-Port"]}</p>
+                        <p className="">Codec: {call.LegB?.Codec}</p>
+                        <p>
+                          RTP: {call.LegB?.["Local-RTP-IP"]}:
+                          {call.LegB?.["Local-RTP-Port"]} ⇆{" "}
+                          {call.LegB?.["Remote-RTP-IP"]}:
+                          {call.LegB?.["Remote-RTP-Port"]}
+                        </p>
+                        <p>
+                          SIP: {call.LegB?.["Local-SIP-IP"]}:
+                          {call.LegB?.["Local-SIP-Port"]} ⇆{" "}
+                          {call.LegB?.["Remote-SIP-IP"]}:
+                          {call.LegB?.["Remote-SIP-Port"]}
+                        </p>
+                        <p>Call-ID: {call.LegB?.["call-id"]}</p>
+                        <p>
+                          Disconnect-Cause:{" "}
+                          {call.LegB?.["h323-disconnect-cause"]}
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            ))
+          ) : (
+            <div className="text-center py-4">Nenhuma chamada ativa</div>
+          )}
+        </div>
       </div>
     </div>
   );

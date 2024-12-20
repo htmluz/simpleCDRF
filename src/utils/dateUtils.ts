@@ -1,6 +1,9 @@
 import { format } from "date-fns";
 
-export function convertToIsoGMTMinus3(dateString: string): any {
+export function convertToIsoGMTMinus3(dateString: string): string | Date {
+  if (dateString == undefined) {
+    return "";
+  }
   const regex =
     /(\d{2}:\d{2}:\d{2}\.\d{3}) \+0000 (\w{3}) (\w{3}) (\d{2}) (\d{4})/;
   const match = dateString.match(regex);
@@ -34,7 +37,7 @@ export function convertToIsoGMTMinus3(dateString: string): any {
   return new Date(utcDate.getTime() - 0 * 60 * 60 * 1000);
 }
 
-export function formatDate(date: any): string {
+export function formatDate(date: string | Date): string {
   if (date == "") {
     return "";
   }
