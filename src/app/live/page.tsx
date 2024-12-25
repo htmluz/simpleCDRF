@@ -12,6 +12,13 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 interface EventResponse {
   count: number;
@@ -83,9 +90,22 @@ export default function BasicEventStreamViewer() {
           <Button>Voltar</Button>
         </Link>
       </div>
-
-      <h2 className="text-xl font-bold mb-4">Chamadas Ativas: {count}</h2>
-
+      <div className="flex mb-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Info className="mr-1 cursor-help w-5 h-5" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Também inclui chamadas com erro. NÃO é o total de chamadas
+                simultâneas.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <h2 className="text-xl font-bold">Chamadas Ativas: {count}</h2>
+      </div>
       <div className="bg-gray-100 dark:bg-neutral-900 p-4 rounded-lg">
         <div className="w-full grid grid-cols-4 mb-2 border rounded-lg px-4 py-2 select-none">
           <p>Origem</p>
@@ -108,16 +128,28 @@ export default function BasicEventStreamViewer() {
                 >
                   <AccordionTrigger className="hover:no-underline w-full">
                     <div className="grid grid-cols-4 w-full gap-4 px-4 ">
-                      <div>{call.LegA?.["Calling-Station-Id"]}</div>
-                      <div>{call.LegA?.["Called-Station-Id"]}</div>
+                      <div>
+                        {call.LegA?.["Calling-Station-Id"] ??
+                          call.LegB?.["Calling-Station-Id"]}
+                      </div>
+                      <div>
+                        {call.LegA?.["Called-Station-Id"] ??
+                          call.LegB?.["Called-Station-Id"]}
+                      </div>
                       <div>
                         {formatDate(
-                          convertToIsoGMTMinus3(call.LegA?.["h323-setup-time"])
+                          convertToIsoGMTMinus3(
+                            call.LegA?.["h323-setup-time"] ??
+                              call.LegB?.["h323-setup-time"]
+                          )
                         )}
                       </div>
                       <div>
                         {formatDate(
-                          convertToIsoGMTMinus3(call.LegA?.["Ring-Start"])
+                          convertToIsoGMTMinus3(
+                            call.LegA?.["Ring-Start"] ??
+                              call.LegB?.["Ring-Start"]
+                          )
                         )}
                       </div>
                     </div>
