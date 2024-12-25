@@ -11,6 +11,7 @@ export function convertToIsoGMTMinus3(dateString: string): string | Date {
     return "";
   }
   const [_, time, dayOfWeek, month, day, year] = match;
+  console.log(_, dayOfWeek);
   const monthNames = [
     "Jan",
     "Feb",

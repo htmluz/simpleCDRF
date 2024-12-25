@@ -5,7 +5,6 @@ import Success from "./ui/success";
 import Failure from "./ui/failure";
 import { TrashIcon } from "lucide-react";
 import { API_BASE_URL } from "@/lib/config";
-import { time } from "console";
 
 interface Gateway {
   name: string;
