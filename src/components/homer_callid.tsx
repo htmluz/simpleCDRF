@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { LoaderCircle, X } from "lucide-react";
 import { format } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface PcapResult {
   stream: {
@@ -25,7 +24,6 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPacket, setSelectedPacket] = useState<PcapResult | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   function getTimeRange(isoDate: string | undefined): [number, number] {
     if (isoDate == undefined) {
@@ -92,8 +90,8 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
 
   if (isLoading) {
     return (
-      <div className="h-48 flex items-center justify-center bg-muted rounded-md">
-        <p className="text-muted-foreground">Carregando dados...</p>
+      <div className="h-56 flex items-center justify-center">
+        <LoaderCircle className="w-10 h-10 animate-spin" />
       </div>
     );
   }
@@ -141,122 +139,157 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
   };
 
   return (
-    <Card className="p-6 bg-gray-50 dark:bg-neutral-800 h-full">
-      <div className="w-full">
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: `repeat(${ips.length + 1}, 1fr)` }}
-        >
-          <div
-            className="border-b-2 text-center border-gray-600 dark:border-neutral-400 p-2 mx-5"
-            style={{
-              gridColumn: 1,
-              gridRow: 1,
-            }}
-          >
-            Timestamp
-          </div>
-          {ips.map((ip, index) => (
+    <div className="flex h-[calc(100%-2rem)]">
+      <div className="flex-1 px-2 py-1 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner min-w-[1080px] max-h-[86%] overflow-hidden">
+        <div className="w-full flex flex-col">
+          <div className="flex-none">
             <div
-              key={index}
-              className="border-b-2 border-gray-600 dark:border-neutral-400 p-2 text-center mx-5"
+              className="grid"
+              style={{ gridTemplateColumns: `repeat(${ips.length + 1}, 1fr)` }}
             >
-              {ip}
-            </div>
-          ))}
-        </div>
-
-        <div className="relative">
-          {pcapData.map((p, i) => {
-            const srcIndex = getColumnIndex(p.stream.src_ip);
-            const dstIndex = getColumnIndex(p.stream.dst_ip);
-            const gridCols = ips.length + 1;
-
-            const getColumnPosition = (index: any) => {
-              return `${(index + 1) * (100 / gridCols)}%`;
-            };
-            const srcPos = getColumnPosition(srcIndex + 0.5);
-            const dstPos = getColumnPosition(dstIndex + 0.5);
-
-            return (
               <div
-                key={i}
-                className="grid items-center my-2 hover:bg-gray-200 dark:hover:bg-neutral-900 transition-colors"
-                onClick={() => {
-                  setSelectedPacket(p);
-                  setIsModalOpen(true);
-                }}
+                className="border-b-2 text-center border-gray-600 dark:border-neutral-400 p-2 mx-5"
                 style={{
-                  gridTemplateColumns: `repeat(${ips.length + 1}, 1fr)`,
-                  minHeight: "2rem",
+                  gridColumn: 1,
+                  gridRow: 1,
                 }}
               >
+                Timestamp
+              </div>
+              {ips.map((ip, index) => (
+                <div key={index} className="relative">
+                  <div
+                    key={index}
+                    className="border-b-2 border-gray-600 bg-gray-50 dark:bg-neutral-800 dark:border-neutral-400 p-2 text-center mx-5 relative z-10"
+                  >
+                    {ip}
+                  </div>
+                  <div
+                    className="absolute top-0 h-[calc(100vh-200px)] w-px bg-gray-300 dark:bg-neutral-600"
+                    style={{
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div
+            className="relative overflow-auto"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            <style>
+              {`
+                div::-webkit-scrollbar {
+                  display: none;
+              }`}
+            </style>
+            {pcapData.map((p, i) => {
+              const srcIndex = getColumnIndex(p.stream.src_ip);
+              const dstIndex = getColumnIndex(p.stream.dst_ip);
+              const gridCols = ips.length + 1;
+              const getColumnPosition = (index: any) => {
+                return `${(index + 1) * (100 / gridCols)}%`;
+              };
+              const srcPos = getColumnPosition(srcIndex + 0.5);
+              const dstPos = getColumnPosition(dstIndex + 0.5);
+              return (
                 <div
-                  className="flex items-center justify-center p-2 mx-5 text-sm"
+                  key={i}
+                  className={`grid items-center hover:bg-gray-100 dark:hover:bg-neutral-900 transition-colors ${
+                    selectedPacket === p
+                      ? "bg-gray-200 dark:bg-neutral-700"
+                      : ""
+                  }`}
+                  onClick={() => setSelectedPacket(p)}
                   style={{
-                    gridColumn: 1,
-                    gridRow: 1,
+                    gridTemplateColumns: `repeat(${ips.length + 1}, 1fr)`,
+                    minHeight: "2rem",
                   }}
                 >
-                  {formatTime(Number(p.values[0][0]))}
-                </div>
-
-                <svg className="absolute w-full h-full pointer-events-none dark:text-white">
-                  <defs>
-                    <marker
-                      id="arrowhead"
-                      markerWidth="10"
-                      markerHeight="7"
-                      refX="9"
-                      refY="3.5"
-                      orient="auto"
-                    >
-                      <polygon
-                        points="0 0, 10 3.5, 0 7"
-                        fill="currentColor"
-                        className="dark:fill-white"
-                      />
-                    </marker>
-                  </defs>
-                  <text
-                    x={srcPos > dstPos ? dstPos : srcPos}
-                    y="50%"
-                    className="text-sm dark:fill-white"
-                    textAnchor="middle"
-                    dx={Math.abs(parseInt(srcPos) - parseInt(dstPos)) / 2 + "%"}
+                  <div
+                    className="flex items-center justify-center p-2 mx-5 text-sm"
+                    style={{
+                      gridColumn: 1,
+                      gridRow: 1,
+                    }}
                   >
-                    {extractSipMethod(p.values[0][1])}
-                  </text>
-                  <line
-                    x1={srcPos}
-                    y1="51%"
-                    x2={dstPos}
-                    y2="51%"
-                    stroke="currentColor"
-                    className="dark:stroke-white"
-                    strokeWidth="2"
-                    markerEnd="url(#arrowhead)"
-                  />
-                </svg>
-              </div>
-            );
-          })}
+                    {formatTime(Number(p.values[0][0]))}
+                  </div>
+
+                  <svg className="absolute w-full h-full pointer-events-none dark:text-white">
+                    <defs>
+                      <marker
+                        id="arrowhead"
+                        markerWidth="10"
+                        markerHeight="7"
+                        refX="9"
+                        refY="3.5"
+                        orient="auto"
+                      >
+                        <polygon
+                          points="0 0, 10 3.5, 0 7"
+                          fill="currentColor"
+                          className="dark:fill-white"
+                        />
+                      </marker>
+                    </defs>
+                    <text
+                      x={srcPos > dstPos ? dstPos : srcPos}
+                      y="50%"
+                      className="text-sm dark:fill-white"
+                      textAnchor="middle"
+                      dx={
+                        Math.abs(parseInt(srcPos) - parseInt(dstPos)) / 2 + "%"
+                      }
+                    >
+                      {extractSipMethod(p.values[0][1])}
+                    </text>
+                    <line
+                      x1={srcPos}
+                      y1="51%"
+                      x2={dstPos}
+                      y2="51%"
+                      stroke="currentColor"
+                      className="dark:stroke-white"
+                      strokeWidth="2"
+                      markerEnd="url(#arrowhead)"
+                    />
+                  </svg>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-[80%] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedPacket?.stream.method} -{" "}
-              {formatTime(Number(selectedPacket?.values[0][0] || 0))}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="font-mono text-sm whitespace-pre">
-            {selectedPacket && formatSipMessage(selectedPacket.values[0][1])}
+
+      {selectedPacket && (
+        <div className="flex-1 max-w-prose max-h-[86%] ml-4 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner overflow-auto">
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                {selectedPacket.stream.method} -{" "}
+                {formatTime(Number(selectedPacket.values[0][0]))}
+              </h3>
+              <button
+                onClick={() => setSelectedPacket(null)}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="font-mono text-sm whitespace-pre-wrap break-all">
+              {formatSipMessage(selectedPacket.values[0][1])}
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 };
 

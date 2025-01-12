@@ -15,8 +15,10 @@ import { ThemeToggle } from "@/components/themetoggle";
 import { API_BASE_URL } from "@/lib/config";
 import { CallRecord } from "@/models/bilhetes";
 import { FilterComponent } from "@/components/filter";
+import { FilterHomer } from "@/components/filterhomer";
 import { TableComponent } from "@/components/tablelegs";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface BilhetesResponse {
   data: CallRecord[];
@@ -88,6 +90,7 @@ const columns = [
 
 export default function BilhetesPage() {
   const [data, setData] = useState<CallRecord[]>([]);
+  const [isHomer, setIsHomer] = useState(false);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 25,
@@ -109,6 +112,15 @@ export default function BilhetesPage() {
     callId: "",
     gatewayIp: "",
     codec: "",
+  });
+  const [filtersHomer, setFiltersHomer] = useState({
+    anyPhone: "",
+    callingPhone: "",
+    calledPhone: "",
+    startDate: "",
+    endDate: "",
+    domain: "",
+    callId: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -177,6 +189,54 @@ export default function BilhetesPage() {
     setIsLoading(false);
   };
 
+  const fetchDataHomer = async () => {
+    setIsLoading(true);
+
+    const queryParams = new URLSearchParams({
+      page: (pagination.pageIndex + 1).toString(),
+      perPage: pagination.pageSize.toString(),
+      ...(filtersHomer.anyPhone && { anyPhone: filtersHomer.anyPhone }),
+      ...(filtersHomer.callingPhone && {
+        callingPhone: filtersHomer.callingPhone,
+      }),
+      ...(filtersHomer.calledPhone && {
+        calledPhone: filtersHomer.calledPhone,
+      }),
+      ...(filtersHomer.callId && { callId: filtersHomer.callId }),
+      ...(filtersHomer.startDate && {
+        startDate: addHours(filtersHomer.startDate, 0),
+      }),
+      ...(filtersHomer.endDate && {
+        endDate: addHours(filtersHomer.endDate, 0),
+      }),
+    });
+    const makeRequest = async () => {
+      const response = await fetch(`${API_BASE_URL}/homer?${queryParams}`);
+      if (response.status === 401) {
+        const new_access_token = await refreshAccessToken();
+        if (new_access_token) {
+          return makeRequest();
+        } else {
+          router.push("/login");
+          return null;
+        }
+      }
+      if (!response.ok) {
+        console.error(`Erro ${response.status}`);
+        router.push("/login");
+        return null;
+      }
+      return response.json();
+    };
+    const result: BilhetesResponse = await makeRequest();
+    if (result) {
+      setData(result.data);
+      setTotalPages(result.totalPages);
+      setTotal(result.total);
+    }
+    setIsLoading(false);
+  };
+
   const handlePageSizeChange = (value: string) => {
     setPagination((prev) => ({
       ...prev,
@@ -194,11 +254,36 @@ export default function BilhetesPage() {
     fetchData();
   };
 
+  const handleSearchHomer = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchDataHomer();
+  };
+
+  const handleToggleHomer = () => {
+    setIsHomer((prev) => !prev);
+  };
+
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6 flex justify-between">
         <h1 className="text-2xl font-bold">Bilhetes</h1>
         <div className="flex space-x-2">
+          <div className="flex mt-2">
+            <label
+              htmlFor="switch"
+              className="select-none font-mono text-sm text-muted-foreground mr-1"
+              title="Chamadas internas e CVU só vão aparecer se forem pesquisadas apenas pela captura."
+            >
+              Pesquisar apenas captura?
+            </label>
+            <Switch
+              id="switch"
+              disabled={true}
+              checked={isHomer}
+              onClick={handleToggleHomer}
+              title="Chamadas internas, CVU ou PABX só vão aparecer se forem pesquisadas apenas pela captura."
+            />
+          </div>
           <ThemeToggle />
           <Link href="/configs">
             <Button>Configs</Button>
@@ -208,18 +293,30 @@ export default function BilhetesPage() {
           </Link>
         </div>
       </div>
-      <FilterComponent
-        filters={filters}
-        setFilters={setFilters}
-        handleSearch={handleSearch}
-      />
-      <TableComponent
-        table={table}
-        data={data}
-        isLoading={isLoading}
-        total={total}
-        handlePageSizeChange={handlePageSizeChange}
-      />
+      {!isHomer ? (
+        <>
+          <FilterComponent
+            filters={filters}
+            setFilters={setFilters}
+            handleSearch={handleSearch}
+          />
+          <TableComponent
+            table={table}
+            data={data}
+            isLoading={isLoading}
+            total={total}
+            handlePageSizeChange={handlePageSizeChange}
+          />
+        </>
+      ) : (
+        <>
+          <FilterHomer
+            filters={filtersHomer}
+            setFilters={setFiltersHomer}
+            handleSearch={handleSearchHomer}
+          />
+        </>
+      )}
     </div>
   );
 }

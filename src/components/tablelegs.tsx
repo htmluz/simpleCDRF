@@ -144,7 +144,7 @@ export const TableComponent = ({
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-screen-xl max-h-[90%] cursor-default">
+        <DialogContent className="max-w-screen-2xl max-h-[90%] min-h-[48%] cursor-default">
           <Tabs defaultValue="radius" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="radius">RADIUS</TabsTrigger>
@@ -304,7 +304,7 @@ export const TableComponent = ({
             </TabsContent>
             <TabsContent
               value="pcap"
-              className="mt-4 max-h-[92%] overflow-auto"
+              className="mt-4 overflow-hidden max-w-screen-2xl h-[90%] max-h-[90%]"
             >
               <PCAPTab
                 callId={selectedRow?.["call-id"]}
