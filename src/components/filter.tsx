@@ -33,7 +33,7 @@ export const FilterComponent = ({
   return (
     <Accordion type="single" collapsible>
       <AccordionItem value="filters" className="border-b-0">
-        <AccordionTrigger className="font-bold text-lg flex justify-start gap-2">
+        <AccordionTrigger className="font-mono font-bold text-lg flex justify-start gap-2">
           Filtros
         </AccordionTrigger>
         <AccordionContent>
@@ -42,9 +42,12 @@ export const FilterComponent = ({
             className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-1"
           >
             <div>
-              <label className="block text-sm font-medium mb-1">Telefone</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Telefone
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.anyPhone}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -56,9 +59,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Origem</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Origem
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.callingPhone}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -70,9 +76,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Destino</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Destino
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.calledPhone}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -84,9 +93,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Codec</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Codec
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.codec}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -98,9 +110,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Nap A</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Nap A
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.napA}
                 onChange={(e) =>
                   setFilters((prev: any) => ({ ...prev, napA: e.target.value }))
@@ -109,9 +124,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Nap B</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Nap B
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.napB}
                 onChange={(e) =>
                   setFilters((prev: any) => ({ ...prev, napB: e.target.value }))
@@ -120,9 +138,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Call-ID</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Call-ID
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.callId}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -134,11 +155,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="font-mono block text-sm font-medium mb-1">
                 Causa da Desconexão
               </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.disconnCause}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -150,9 +172,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Gateway</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Gateway
+              </label>
               <Input
                 type="text"
+                className="font-mono"
                 value={filters.gatewayIp}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -164,11 +189,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="font-mono block text-sm font-medium mb-1">
                 Data Início
               </label>
               <Input
                 type="datetime-local"
+                className="font-mono"
                 value={filters.startDate}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -179,9 +205,12 @@ export const FilterComponent = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Data Fim</label>
+              <label className="font-mono block text-sm font-medium mb-1">
+                Data Fim
+              </label>
               <Input
                 type="datetime-local"
+                className="font-mono"
                 value={filters.endDate}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
@@ -191,7 +220,7 @@ export const FilterComponent = ({
                 }
               />
             </div>
-            <Button type="submit" className="mt-6">
+            <Button type="submit" className="mt-6 font-mono">
               Buscar
             </Button>
           </form>

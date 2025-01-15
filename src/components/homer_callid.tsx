@@ -1,29 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { LoaderCircle, X } from "lucide-react";
 import { format } from "date-fns";
-
-interface PcapResult {
-  stream: {
-    src_ip: string;
-    dst_ip: string;
-    method: string;
-    src_port: string;
-    dst_port: string;
-  };
-  values: [string, string][];
-}
+import { HomerCallMessages } from "@/models/bilhetes";
 
 interface PCAPTabProps {
-  callId: string | undefined;
-  time: string | undefined;
+  callId?: string | undefined;
+  time?: string | undefined;
+  pcapA?: HomerCallMessages[];
 }
 
-const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
-  const [pcapData, setPcapData] = useState<PcapResult[] | null>(null);
+const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
+  const [pcapData, setPcapData] = useState<HomerCallMessages[] | null>(
+    pcapA || null
+  );
   const [ips, setIps] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPacket, setSelectedPacket] = useState<PcapResult | null>(null);
+  const [selectedPacket, setSelectedPacket] =
+    useState<HomerCallMessages | null>(null);
 
   function getTimeRange(isoDate: string | undefined): [number, number] {
     if (isoDate == undefined) {
@@ -38,6 +32,23 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
 
   useEffect(() => {
     const fetchPcapData = async () => {
+      if (pcapA) {
+        const result = pcapA.sort((a: any, b: any) => {
+          const timeA = BigInt(a.values[0][0]);
+          const timeB = BigInt(b.values[0][0]);
+          return Number(timeA - timeB);
+        });
+
+        const uniqueIps = new Set<string>();
+        result.forEach((packet) => {
+          uniqueIps.add(packet.stream.src_ip);
+          uniqueIps.add(packet.stream.dst_ip);
+        });
+        setIps([...uniqueIps]);
+        setIsLoading(false);
+        return;
+      }
+
       if (!callId) {
         setIsLoading(false);
         return;
@@ -51,7 +62,7 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
           end: after.toString(),
           start: before.toString(),
           limit: "1000",
-          query: `{job="heplify-server"} |~ \`${callId}\``,
+          query: `{job="heplify-server", call_id="${callId}"}`,
           step: "15000ms",
         });
 
@@ -78,7 +89,7 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
           setError("Failed to fetch PCAP data");
         }
       } catch (err) {
-        console.log(err);
+        console.error(err);
         setError("Error fetching PCAP data");
       } finally {
         setIsLoading(false);
@@ -86,19 +97,19 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
     };
 
     fetchPcapData();
-  }, [callId]);
+  }, [callId, pcapA]);
 
   if (isLoading) {
     return (
-      <div className="h-56 flex items-center justify-center">
-        <LoaderCircle className="w-10 h-10 animate-spin" />
+      <div className="h-80 flex items-center justify-center">
+        <LoaderCircle className="w-10 h-10 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="h-48 flex items-center justify-center bg-muted rounded-md">
+      <div className="h-80 flex items-center justify-center rounded-md">
         <p className="text-destructive">{error}</p>
       </div>
     );
@@ -106,8 +117,10 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time }) => {
 
   if (!pcapData?.length) {
     return (
-      <div className="h-48 flex items-center justify-center bg-muted rounded-md">
-        <p className="text-muted-foreground">Nenhum dado PCAP encontrado</p>
+      <div className="h-80 flex items-center justify-center rounded-md">
+        <p className="text-muted-foreground font-mono">
+          Nenhuma captura encontrada :(
+        </p>
       </div>
     );
   }

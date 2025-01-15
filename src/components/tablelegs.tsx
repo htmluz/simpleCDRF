@@ -146,7 +146,7 @@ export const TableComponent = ({
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-screen-2xl max-h-[90%] min-h-[48%] cursor-default">
           <Tabs defaultValue="radius" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="font-mono grid w-full grid-cols-2">
               <TabsTrigger value="radius">RADIUS</TabsTrigger>
               <TabsTrigger value="pcap">PCAP</TabsTrigger>
             </TabsList>

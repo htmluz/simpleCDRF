@@ -64,18 +64,20 @@ export default function Login() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              className="font-mono"
               required
             ></Input>
             <Input
               placeholder="Senha"
               type="password"
               value={password}
+              className="font-mono"
               onChange={(e) => setPassword(e.target.value)}
               required
             ></Input>
           </div>
           {status === "idle" ? (
-            <Button className="w-[100%]" type="submit">
+            <Button className="font-mono w-[100%]" type="submit">
               Entrar
             </Button>
           ) : (

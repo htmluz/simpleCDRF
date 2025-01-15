@@ -8,17 +8,19 @@ import {
   createColumnHelper,
   getCoreRowModel,
   getPaginationRowModel,
+  ColumnDef,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { refreshAccessToken } from "@/lib/auth";
 import { ThemeToggle } from "@/components/themetoggle";
 import { API_BASE_URL } from "@/lib/config";
-import { CallRecord } from "@/models/bilhetes";
+import { CallRecord, HomerCall } from "@/models/bilhetes";
 import { FilterComponent } from "@/components/filter";
 import { FilterHomer } from "@/components/filterhomer";
 import { TableComponent } from "@/components/tablelegs";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { HomerTableComponent } from "@/components/tablehomer";
 
 interface BilhetesResponse {
   data: CallRecord[];
@@ -29,6 +31,38 @@ interface BilhetesResponse {
 }
 
 const columnHelper = createColumnHelper<CallRecord>();
+const columnHelperHomer = createColumnHelper<HomerCall>();
+
+const columnsHomer: ColumnDef<HomerCall, string>[] = [
+  columnHelperHomer.accessor("start_time", {
+    header: "Início",
+    cell: (info) => {
+      const isoString = info.getValue();
+      if (!isoString) return "";
+      return format(new Date(isoString), "dd/MM/yyyy HH:mm:ss");
+    },
+  }),
+  columnHelperHomer.accessor("end_time", {
+    header: "Fim",
+    cell: (info) => {
+      const isoString = info.getValue();
+      if (!isoString) return "";
+      return format(new Date(isoString), "dd/MM/yyyy HH:mm:ss");
+    },
+  }),
+  columnHelperHomer.accessor("from_number", {
+    header: "Origem",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelperHomer.accessor("to_number", {
+    header: "Destino",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelperHomer.accessor("call_id", {
+    header: "Call-ID",
+    cell: (info) => info.getValue(),
+  }),
+];
 
 const columns = [
   columnHelper.accessor("h323-setup-time", {
@@ -90,6 +124,7 @@ const columns = [
 
 export default function BilhetesPage() {
   const [data, setData] = useState<CallRecord[]>([]);
+  const [dataHomer, setDataHomer] = useState<HomerCall[]>([]);
   const [isHomer, setIsHomer] = useState(false);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -117,8 +152,12 @@ export default function BilhetesPage() {
     anyPhone: "",
     callingPhone: "",
     calledPhone: "",
-    startDate: "",
-    endDate: "",
+    startDate: new Date(today.getTime() - (3 * 60 + 15) * 60 * 1000)
+      .toISOString()
+      .slice(0, 16),
+    endDate: new Date(today.getTime() - 3 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 16),
     domain: "",
     callId: "",
   });
@@ -136,6 +175,12 @@ export default function BilhetesPage() {
     onPaginationChange: setPagination,
     pageCount: totalPages,
     manualPagination: true,
+  });
+
+  const tableHomer = useReactTable({
+    data: dataHomer,
+    columns: columnsHomer,
+    getCoreRowModel: getCoreRowModel(),
   });
 
   const addHours = (dateString: string, hours: number): string => {
@@ -193,14 +238,15 @@ export default function BilhetesPage() {
     setIsLoading(true);
 
     const queryParams = new URLSearchParams({
-      page: (pagination.pageIndex + 1).toString(),
-      perPage: pagination.pageSize.toString(),
       ...(filtersHomer.anyPhone && { anyPhone: filtersHomer.anyPhone }),
       ...(filtersHomer.callingPhone && {
         callingPhone: filtersHomer.callingPhone,
       }),
       ...(filtersHomer.calledPhone && {
         calledPhone: filtersHomer.calledPhone,
+      }),
+      ...(filtersHomer.domain && {
+        calledPhone: filtersHomer.domain,
       }),
       ...(filtersHomer.callId && { callId: filtersHomer.callId }),
       ...(filtersHomer.startDate && {
@@ -228,11 +274,9 @@ export default function BilhetesPage() {
       }
       return response.json();
     };
-    const result: BilhetesResponse = await makeRequest();
+    const result: HomerCall[] = await makeRequest();
     if (result) {
-      setData(result.data);
-      setTotalPages(result.totalPages);
-      setTotal(result.total);
+      setDataHomer(result);
     }
     setIsLoading(false);
   };
@@ -278,7 +322,7 @@ export default function BilhetesPage() {
             </label>
             <Switch
               id="switch"
-              disabled={true}
+              disabled={false}
               checked={isHomer}
               onClick={handleToggleHomer}
               title="Chamadas internas, CVU ou PABX só vão aparecer se forem pesquisadas apenas pela captura."
@@ -286,10 +330,7 @@ export default function BilhetesPage() {
           </div>
           <ThemeToggle />
           <Link href="/configs">
-            <Button>Configs</Button>
-          </Link>
-          <Link href="/live">
-            <Button>Live view</Button>
+            <Button className="font-mono">Configs</Button>
           </Link>
         </div>
       </div>
@@ -314,6 +355,11 @@ export default function BilhetesPage() {
             filters={filtersHomer}
             setFilters={setFiltersHomer}
             handleSearch={handleSearchHomer}
+          />
+          <HomerTableComponent
+            table={tableHomer}
+            data={dataHomer}
+            isLoading={isLoading}
           />
         </>
       )}

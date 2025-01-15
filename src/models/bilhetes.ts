@@ -37,3 +37,31 @@ export interface CallRecordFull {
   LegA: CallRecord;
   LegB: CallRecord;
 }
+
+export interface HomerCallMessages {
+  stream: HomerStream;
+  values: string[][];
+}
+
+export interface HomerStream {
+  dst_ip: string;
+  dst_port: string;
+  hostname: string;
+  job: string;
+  method: string;
+  node: string;
+  protocol: string;
+  response: string;
+  src_ip: string;
+  src_port: string;
+  type: string;
+}
+
+export interface HomerCall {
+  call_id: string;
+  end_time: string;
+  start_time: string;
+  to_number: string;
+  from_number: string;
+  messages: HomerCallMessages[];
+}
