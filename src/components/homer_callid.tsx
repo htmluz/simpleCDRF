@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { LoaderCircle, X } from "lucide-react";
 import { format } from "date-fns";
 import { HomerCallMessages } from "@/models/bilhetes";
+import { Button } from "./ui/button";
+import RTCPModal from "./rtcp";
 
 interface PCAPTabProps {
   callId?: string | undefined;
@@ -18,6 +20,7 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedPacket, setSelectedPacket] =
     useState<HomerCallMessages | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   function getTimeRange(isoDate: string | undefined): [number, number] {
     if (isoDate == undefined) {
@@ -41,6 +44,9 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
 
         const uniqueIps = new Set<string>();
         result.forEach((packet) => {
+          if (packet.stream.type == "rtcp") {
+            console.log(packet);
+          }
           uniqueIps.add(packet.stream.src_ip);
           uniqueIps.add(packet.stream.dst_ip);
         });
@@ -86,11 +92,11 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
           setIps([...uniqueIps]);
           setPcapData(result);
         } else {
-          setError("Failed to fetch PCAP data");
+          setError("Erro procurando pela chamada");
         }
       } catch (err) {
         console.error(err);
-        setError("Error fetching PCAP data");
+        setError("Erro procurando pela chamada");
       } finally {
         setIsLoading(false);
       }
@@ -110,7 +116,7 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
   if (error) {
     return (
       <div className="h-80 flex items-center justify-center rounded-md">
-        <p className="text-destructive">{error}</p>
+        <p className="text-muted-foreground">{error}</p>
       </div>
     );
   }
@@ -152,8 +158,8 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
   };
 
   return (
-    <div className="flex h-[calc(100%-2rem)]">
-      <div className="flex-1 px-2 py-1 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner min-w-[1080px] max-h-[86%] overflow-hidden">
+    <div className="flex h-full max-h-[calc(100vh-100px)]">
+      <div className="flex-1 px-2 py-1 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner min-w-[1080px] h-full max-h-[95%] overflow-hidden">
         <div className="w-full flex flex-col">
           <div className="flex-none">
             <div
@@ -190,7 +196,7 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
           </div>
 
           <div
-            className="relative overflow-auto"
+            className="relative overflow-auto h-[calc(100% - 40px)]"
             style={{
               scrollbarWidth: "none",
               msOverflowStyle: "none",
@@ -226,7 +232,7 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
                   }}
                 >
                   <div
-                    className="flex items-center justify-center p-2 mx-5 text-sm"
+                    className="flex items-center justify-center p-2  text-sm"
                     style={{
                       gridColumn: 1,
                       gridRow: 1,
@@ -235,7 +241,7 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
                     {formatTime(Number(p.values[0][0]))}
                   </div>
 
-                  <svg className="absolute w-full h-full pointer-events-none dark:text-white">
+                  <svg className="absolute w-full pointer-events-none dark:text-white">
                     <defs>
                       <marker
                         id="arrowhead"
@@ -254,14 +260,16 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
                     </defs>
                     <text
                       x={srcPos > dstPos ? dstPos : srcPos}
-                      y="50%"
+                      y="49%"
                       className="text-sm dark:fill-white"
                       textAnchor="middle"
                       dx={
                         Math.abs(parseInt(srcPos) - parseInt(dstPos)) / 2 + "%"
                       }
                     >
-                      {extractSipMethod(p.values[0][1])}
+                      {p.stream.type == "sip"
+                        ? extractSipMethod(p.values[0][1])
+                        : "RTP"}
                     </text>
                     <line
                       x1={srcPos}
@@ -282,12 +290,18 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
       </div>
 
       {selectedPacket && (
-        <div className="flex-1 max-w-prose max-h-[86%] ml-4 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner overflow-auto">
+        <div className="flex-1 max-w-prose h-[95%] ml-4 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner overflow-auto">
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">
-                {selectedPacket.stream.method} -{" "}
-                {formatTime(Number(selectedPacket.values[0][0]))}
+                {selectedPacket.stream.type == "sip" ? (
+                  <>
+                    {selectedPacket.stream.method} -{" "}
+                    {formatTime(Number(selectedPacket.values[0][0]))}
+                  </>
+                ) : (
+                  <>RTP</>
+                )}
               </h3>
               <button
                 onClick={() => setSelectedPacket(null)}
@@ -297,7 +311,32 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
               </button>
             </div>
             <div className="font-mono text-sm whitespace-pre-wrap break-all">
-              {formatSipMessage(selectedPacket.values[0][1])}
+              {selectedPacket.stream.type == "sip" ? (
+                formatSipMessage(selectedPacket.values[0][1])
+              ) : (
+                <>
+                  <div>
+                    <p className="text-center">
+                      {selectedPacket.stream.src_ip}:
+                      {selectedPacket.stream.src_port}
+                      <b> ⇆ </b>
+                      {selectedPacket.stream.dst_ip}:
+                      {selectedPacket.stream.dst_port}
+                    </p>
+                    <Button
+                      onClick={() => setIsModalOpen(true)}
+                      className="w-full mt-1"
+                    >
+                      Estatísticas RTP
+                    </Button>
+                    <RTCPModal
+                      isOpen={isModalOpen}
+                      onClose={() => setIsModalOpen(false)}
+                      txData={selectedPacket}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

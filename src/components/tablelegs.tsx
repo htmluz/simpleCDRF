@@ -68,7 +68,7 @@ export const TableComponent = ({
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
-                  className="text-center"
+                  className="text-center font-mono py-4"
                 >
                   Carregando...
                 </TableCell>
@@ -77,9 +77,9 @@ export const TableComponent = ({
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
-                  className="text-center"
+                  className="text-center py-4 font-mono"
                 >
-                  Nenhum registro encontrado
+                  Nenhuma ligação encontrada
                 </TableCell>
               </TableRow>
             ) : (
@@ -148,7 +148,7 @@ export const TableComponent = ({
           <Tabs defaultValue="radius" className="w-full">
             <TabsList className="font-mono grid w-full grid-cols-2">
               <TabsTrigger value="radius">RADIUS</TabsTrigger>
-              <TabsTrigger value="pcap">PCAP</TabsTrigger>
+              <TabsTrigger value="pcap">Call Flow</TabsTrigger>
             </TabsList>
             <TabsContent value="radius" className="mt-4">
               {selectedRow && (

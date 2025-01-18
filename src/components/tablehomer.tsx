@@ -54,7 +54,7 @@ export const HomerTableComponent = ({
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
-                  className="text-center"
+                  className="text-center font-mono py-4"
                 >
                   Carregando...
                 </TableCell>
@@ -63,7 +63,7 @@ export const HomerTableComponent = ({
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
-                  className="text-center"
+                  className="text-center font-mono py-4"
                 >
                   Nenhum registro encontrado
                 </TableCell>
@@ -91,7 +91,7 @@ export const HomerTableComponent = ({
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-screen-2xl max-h-[90%] min-h-[48%] cursor-default">
+        <DialogContent className="max-w-screen-2xl h-[90%] cursor-default overflow-hidden">
           <PCAPTab pcapA={selectedRow?.messages} />
         </DialogContent>
       </Dialog>

@@ -47,6 +47,9 @@ export interface HomerStream {
   dst_ip: string;
   dst_port: string;
   hostname: string;
+  call_id: string;
+  from: string;
+  to: string;
   job: string;
   method: string;
   node: string;
