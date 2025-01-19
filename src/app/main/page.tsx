@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, intervalToDuration } from "date-fns";
 import {
   useReactTable,
   createColumnHelper,
@@ -33,7 +33,7 @@ interface BilhetesResponse {
 const columnHelper = createColumnHelper<CallRecord>();
 const columnHelperHomer = createColumnHelper<HomerCall>();
 
-const columnsHomer: ColumnDef<HomerCall, string>[] = [
+const columnsHomer: ColumnDef<HomerCall, any>[] = [
   columnHelperHomer.accessor("start_time", {
     header: "Início",
     cell: (info) => {
@@ -50,6 +50,24 @@ const columnsHomer: ColumnDef<HomerCall, string>[] = [
       return format(new Date(isoString), "dd/MM/yyyy HH:mm:ss");
     },
   }),
+  columnHelperHomer.accessor(
+    (row) => ({ start: row.start_time, end: row.end_time }),
+    {
+      id: "duration",
+      header: "Duração",
+      cell: (info) => {
+        const { start, end } = info.getValue();
+        if (!start || !end) return "N/A";
+        const duration = intervalToDuration({
+          start: new Date(start),
+          end: new Date(end),
+        });
+        return `${duration.hours?.toString().padStart(2, "0") || "00"}:${
+          duration.minutes?.toString().padStart(2, "0") || "00"
+        }:${duration.seconds?.toString().padStart(2, "0") || "00"}`;
+      },
+    }
+  ),
   columnHelperHomer.accessor("from_number", {
     header: "Origem",
     cell: (info) => info.getValue(),

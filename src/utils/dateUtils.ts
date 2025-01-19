@@ -11,7 +11,6 @@ export function convertToIsoGMTMinus3(dateString: string): string | Date {
     return "";
   }
   const [_, time, dayOfWeek, month, day, year] = match;
-  console.log(_, dayOfWeek);
   const monthNames = [
     "Jan",
     "Feb",
@@ -36,6 +35,21 @@ export function convertToIsoGMTMinus3(dateString: string): string | Date {
   )}-${day}T${time}Z`;
   const utcDate = new Date(utcDateString);
   return new Date(utcDate.getTime() - 0 * 60 * 60 * 1000);
+}
+
+export function convertFromUnixtoIso(timestamp: string | undefined): string {
+  if (!timestamp) {
+    return "";
+  }
+  try {
+    const bigIntTimestamp = BigInt(timestamp);
+    const milliseconds = Number(bigIntTimestamp / BigInt(1000000));
+    const date = new Date(milliseconds);
+    return date.toISOString();
+  } catch (error) {
+    console.error("Erro ao converter timestamp:", error);
+    return "Invalid timestamp";
+  }
 }
 
 export function formatDate(date: string | Date): string {

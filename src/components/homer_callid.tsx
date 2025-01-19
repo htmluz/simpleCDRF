@@ -44,9 +44,6 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
 
         const uniqueIps = new Set<string>();
         result.forEach((packet) => {
-          if (packet.stream.type == "rtcp") {
-            console.log(packet);
-          }
           uniqueIps.add(packet.stream.src_ip);
           uniqueIps.add(packet.stream.dst_ip);
         });

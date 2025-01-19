@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import PCAPTab from "./homer_callid";
+import { convertFromUnixtoIso } from "@/utils/dateUtils";
 import { flexRender } from "@tanstack/react-table";
 import { HomerCall } from "@/models/bilhetes";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -92,7 +93,10 @@ export const HomerTableComponent = ({
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-screen-2xl h-[90%] cursor-default overflow-hidden">
-          <PCAPTab pcapA={selectedRow?.messages} />
+          <PCAPTab
+            callId={selectedRow?.call_id}
+            time={convertFromUnixtoIso(selectedRow?.messages[0].values[0][0])}
+          />
         </DialogContent>
       </Dialog>
     </>

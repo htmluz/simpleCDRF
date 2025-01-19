@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CustomGraphTooltip } from "./rechartstooltip";
 import {
   LineChart,
   Line,
@@ -96,7 +97,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
         <h3 className="text-sm font-semibold mb-2">Mean Opinion Score (MOS)</h3>
         <ResponsiveContainer width="100%" height="90%">
           <LineChart data={mosData}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="6 6" />
             <XAxis
               dataKey="timestamp"
               tickFormatter={(tick) =>
@@ -109,6 +110,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
               labelFormatter={(label) =>
                 new Date(label / 1000000).toLocaleString()
               }
+              content={<CustomGraphTooltip />}
               formatter={(value) => [
                 value !== null ? Number(value).toFixed(2) : "N/A",
                 "MOS",
@@ -149,6 +151,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
           />
           <YAxis fontSize={10} />
           <Tooltip
+            content={<CustomGraphTooltip />}
             labelFormatter={(label) =>
               new Date(label / 1000000).toLocaleString()
             }
@@ -190,7 +193,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
         </div>
         <ResponsiveContainer width="100%" height="90%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="6 6" />
             <XAxis
               dataKey="timestamp"
               tickFormatter={(tick) =>
@@ -200,6 +203,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
             />
             <YAxis fontSize={10} />
             <Tooltip
+              content={<CustomGraphTooltip />}
               labelFormatter={(label) =>
                 new Date(label / 1000000).toLocaleString()
               }
@@ -225,12 +229,12 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95%] w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold mb-4">
+          <DialogTitle className="text-xl font-bold mb-0">
             Estatísticas RTP
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-6 cursor-default">
-          <div className="bg-gray-100 p-2 rounded-md text-sm font-mono">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 shadow-md text-sm font-mono">
             <p>
               <b>Call-ID: </b>
               {txData.stream.call_id}
@@ -242,13 +246,13 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow-md md:col-span-2 p-4">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md md:col-span-2 p-4">
               <h2 className="text-lg font-semibold mb-4">
                 Qualidade da Chamada
               </h2>
               {renderMOSChart(parsedTxData)}
             </div>
-            <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md p-4">
               <h2 className="text-lg font-semibold mb-4">
                 Latência e Sincronização
               </h2>
@@ -260,7 +264,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
                 "Mede o tempo decorrido desde que o último relatório RTCP foi recebido. É usado para calcular a latência total de ida e volta na conexão."
               )}
             </div>
-            <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md p-4">
               <h2 className="text-lg font-semibold mb-4">
                 Desempenho de Envio
               </h2>
@@ -281,7 +285,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
                 )}
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md p-4">
               <h2 className="text-lg font-semibold mb-4">Estabilidade RTP</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {renderChart(
@@ -305,7 +309,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
                 )}
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md p-4">
               <h2 className="text-lg font-semibold mb-4">
                 Qualidade de Conexão
               </h2>

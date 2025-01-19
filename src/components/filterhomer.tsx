@@ -162,8 +162,8 @@ export const FilterHomer = ({
           <div className="bg-neutral-100 dark:bg-neutral-800 rounded p-2 mt-4 flex select-none cursor-default">
             <TriangleAlert className="h-5 w-5 mt-1 mr-1 text-muted-foreground" />
             <p className="font-mono mt-1 text-muted-foreground">
-              Tente realizar uma busca mais específica para não sobrecarregar o
-              servidor.
+              Buscas sem ser por Call-ID por enquanto são mais lentas. Vão
+              demorar!
             </p>
           </div>
         </AccordionContent>
