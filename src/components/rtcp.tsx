@@ -61,7 +61,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
 
     const delay = dataPoint.data.report_blocks_xr.round_trip_delay || 0;
     const packetLoss =
-      (dataPoint.data.report_blocks[0].fraction_lost || 0) * 100; // Convert to percentage
+      (dataPoint.data.report_blocks[0].fraction_lost || 0) * 100; // to %
     const jitter = dataPoint.data.report_blocks[0].ia_jitter || 0;
 
     const Rq = 93.2;
@@ -69,7 +69,7 @@ const RTCPModal: React.FC<RTCPModalProps> = ({ isOpen, onClose, txData }) => {
       0.024 * delay + 0.11 * (delay - 177.3) * Math.max(0, delay - 177.3);
     const Ie = 30 * Math.log(1 + 15 * packetLoss);
     const Bpl = 25.1;
-    const BurstR = (dataPoint.data.report_blocks_xr.burst_density || 0) / 100; // Assuming burst_density is in percentage
+    const BurstR = (dataPoint.data.report_blocks_xr.burst_density || 0) / 100; // burst_density em % ja
 
     const Ieff =
       packetLoss + BurstR === 0

@@ -96,6 +96,7 @@ export const HomerTableComponent = ({
           <PCAPTab
             callId={selectedRow?.call_id}
             time={convertFromUnixtoIso(selectedRow?.messages[0].values[0][0])}
+            calltoPcap={selectedRow}
           />
         </DialogContent>
       </Dialog>

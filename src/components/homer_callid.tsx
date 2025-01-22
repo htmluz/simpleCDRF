@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { LoaderCircle, X } from "lucide-react";
 import { format } from "date-fns";
-import { HomerCallMessages } from "@/models/bilhetes";
+import { HomerCallMessages, HomerCall, HomerStream } from "@/models/bilhetes";
 import { Button } from "./ui/button";
 import RTCPModal from "./rtcp";
+import { PCAPWriter } from "@/utils/generatePcap";
+import { streamsToHomerCalls } from "@/utils/streamsToHomerCall";
 
 interface PCAPTabProps {
   callId?: string | undefined;
   time?: string | undefined;
   pcapA?: HomerCallMessages[];
+  calltoPcap?: HomerCall | null;
 }
 
-const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
+const PCAPTab: React.FC<PCAPTabProps> = ({
+  callId,
+  time,
+  pcapA,
+  calltoPcap,
+}) => {
   const [pcapData, setPcapData] = useState<HomerCallMessages[] | null>(
     pcapA || null
   );
+  const [callTo, setCallTo] = useState<HomerCall | null>(calltoPcap || null);
   const [ips, setIps] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,6 +95,9 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
             uniqueIps.add(b.stream.dst_ip);
           }
 
+          if (!calltoPcap) {
+            setCallTo(streamsToHomerCalls(result));
+          }
           setIps([...uniqueIps]);
           setPcapData(result);
         } else {
@@ -154,9 +166,40 @@ const PCAPTab: React.FC<PCAPTabProps> = ({ callId, time, pcapA }) => {
     return match ? match[1] || match[2] : null;
   };
 
+  const generatePCAP = (callData: HomerCall | null | undefined) => {
+    if (!callData) {
+      alert(
+        "Sem dados para gerar a captura. Se persistir entre em contato com um administrador"
+      );
+      return;
+    }
+    try {
+      const pcapWriter = new PCAPWriter();
+      const pcapBlob = pcapWriter.generatePCAP(callData);
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(pcapBlob);
+      link.download = `${callData.call_id}.pcap`;
+      link.click();
+
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error("erro gerando a captura", error);
+      alert(
+        "Erro gerando a captura. Se persistir entre em contato com um administrador"
+      );
+    }
+  };
+
   return (
     <div className="flex h-full max-h-[calc(100vh-100px)]">
       <div className="flex-1 px-2 py-1 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner min-w-[1080px] h-full max-h-[95%] overflow-hidden">
+        <Button
+          className="absolute bottom-3 right-3 z-50"
+          onClick={() => generatePCAP(callTo)}
+        >
+          Baixar .pcap
+        </Button>
         <div className="w-full flex flex-col">
           <div className="flex-none">
             <div
