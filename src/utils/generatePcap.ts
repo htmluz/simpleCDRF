@@ -15,7 +15,7 @@ const PCAP_CONSTANTS = {
 } as const;
 
 export class PCAPWriter {
-  private createGlobalHeader(): ArrayBuffer {
+  private createGlobalHeader(): Uint8Array {
     const header = new Uint8Array([
       0xd4,
       0xc3,
