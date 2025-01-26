@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { format, intervalToDuration } from "date-fns";
 import {
   useReactTable,
@@ -18,9 +17,10 @@ import { CallRecord, HomerCall } from "@/models/bilhetes";
 import { FilterComponent } from "@/components/filter";
 import { FilterHomer } from "@/components/filterhomer";
 import { TableComponent } from "@/components/tablelegs";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { HomerTableComponent } from "@/components/tablehomer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Phone, PhoneCall, Settings } from "lucide-react";
+import Configs from "@/components/settings";
 
 interface BilhetesResponse {
   data: CallRecord[];
@@ -143,7 +143,6 @@ const columns = [
 export default function BilhetesPage() {
   const [data, setData] = useState<CallRecord[]>([]);
   const [dataHomer, setDataHomer] = useState<HomerCall[]>([]);
-  const [isHomer, setIsHomer] = useState(false);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 25,
@@ -321,39 +320,25 @@ export default function BilhetesPage() {
     fetchDataHomer();
   };
 
-  const handleToggleHomer = () => {
-    setIsHomer((prev) => !prev);
-  };
-
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-6 flex justify-between">
-        <h1 className="text-2xl font-bold">Bilhetes</h1>
-        <div className="flex space-x-2">
-          <div className="flex mt-2">
-            <label
-              htmlFor="switch"
-              className="select-none font-mono text-sm text-muted-foreground mr-1"
-              title="Chamadas internas e CVU só vão aparecer se forem pesquisadas apenas pela captura."
-            >
-              Pesquisar apenas captura?
-            </label>
-            <Switch
-              id="switch"
-              disabled={false}
-              checked={isHomer}
-              onClick={handleToggleHomer}
-              title="Chamadas internas, CVU ou PABX só vão aparecer se forem pesquisadas apenas pela captura."
-            />
-          </div>
+    <>
+      <Tabs defaultValue="tableRadius" className="mt-3 mx-6">
+        <TabsList className="mb-2">
+          <TabsTrigger value="tableRadius" className="font-mono">
+            <Phone className="mr-2 h-4 w-4" />
+            Radius
+          </TabsTrigger>
+          <TabsTrigger value="homer" className="font-mono">
+            <PhoneCall className="mr-2 h-4 w-4" />
+            Homer
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="font-mono">
+            <Settings className="mr-2 h-4 w-4" />
+            Configurações
+          </TabsTrigger>
           <ThemeToggle />
-          <Link href="/configs">
-            <Button className="font-mono">Configs</Button>
-          </Link>
-        </div>
-      </div>
-      {!isHomer ? (
-        <>
+        </TabsList>
+        <TabsContent value="tableRadius">
           <FilterComponent
             filters={filters}
             setFilters={setFilters}
@@ -366,9 +351,8 @@ export default function BilhetesPage() {
             total={total}
             handlePageSizeChange={handlePageSizeChange}
           />
-        </>
-      ) : (
-        <>
+        </TabsContent>
+        <TabsContent value="homer">
           <FilterHomer
             filters={filtersHomer}
             setFilters={setFiltersHomer}
@@ -379,8 +363,11 @@ export default function BilhetesPage() {
             data={dataHomer}
             isLoading={isLoading}
           />
-        </>
-      )}
-    </div>
+        </TabsContent>
+        <TabsContent value="settings">
+          <Configs />
+        </TabsContent>
+      </Tabs>
+    </>
   );
 }

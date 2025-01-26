@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { HomerCallMessages, HomerCall, HomerStream } from "@/models/bilhetes";
 import { Button } from "./ui/button";
 import RTCPModal from "./rtcp";
+import { motion, AnimatePresence } from "framer-motion";
 import { PCAPWriter } from "@/utils/generatePcap";
 import { streamsToHomerCalls } from "@/utils/streamsToHomerCall";
 
@@ -192,39 +193,33 @@ const PCAPTab: React.FC<PCAPTabProps> = ({
   };
 
   return (
-    <div className="flex h-full max-h-[calc(100vh-100px)]">
-      <div className="flex-1 px-2 py-1 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner min-w-[1080px] h-full max-h-[95%] overflow-hidden">
+    <div className="flex h-full max-h-[calc(100vh-180px)] p-0 rounded-lg border-l-2 bg-white dark:bg-black">
+      <div className="flex-1 bg-white dark:bg-black rounded-l-lg min-w-[1080px] h-full max-h-[100%] overflow-hidden relative">
         <Button
           className="absolute bottom-3 right-3 z-50"
           onClick={() => generatePCAP(callTo)}
         >
-          Baixar .pcap
+          Download .pcap
         </Button>
-        <div className="w-full flex flex-col">
-          <div className="flex-none">
+        <div className="w-full flex flex-col h-full">
+          <div className="flex-none p-1">
             <div
               className="grid"
               style={{ gridTemplateColumns: `repeat(${ips.length + 1}, 1fr)` }}
             >
-              <div
-                className="border-b-2 text-center border-gray-600 dark:border-neutral-400 p-2 mx-5"
-                style={{
-                  gridColumn: 1,
-                  gridRow: 1,
-                }}
-              >
+              <div className="text-center font-semibold text-neutral-700 dark:text-neutral-300">
                 Timestamp
               </div>
               {ips.map((ip, index) => (
                 <div key={index} className="relative">
                   <div
                     key={index}
-                    className="border-b-2 border-gray-600 bg-gray-50 dark:bg-neutral-800 dark:border-neutral-400 p-2 text-center mx-5 relative z-10"
+                    className="text-center font-semibold bg-white dark:bg-black border-b-2 dark:border-b-2 dark:border-neutral-300 relative z-10 mx-5  text-neutral-700 dark:text-neutral-300"
                   >
                     {ip}
                   </div>
                   <div
-                    className="absolute top-0 h-[calc(100vh-200px)] w-px bg-gray-300 dark:bg-neutral-600"
+                    className="absolute top-0 h-[calc(100vh-200px)] w-px bg-gray-300 dark:bg-neutral-500"
                     style={{
                       left: "50%",
                       transform: "translateX(-50%)",
@@ -234,35 +229,22 @@ const PCAPTab: React.FC<PCAPTabProps> = ({
               ))}
             </div>
           </div>
-
-          <div
-            className="relative overflow-auto h-[calc(100% - 40px)]"
-            style={{
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            }}
-          >
-            <style>
-              {`
-                div::-webkit-scrollbar {
-                  display: none;
-              }`}
-            </style>
+          <div className="relative flex-1 overflow-auto">
             {pcapData.map((p, i) => {
               const srcIndex = getColumnIndex(p.stream.src_ip);
               const dstIndex = getColumnIndex(p.stream.dst_ip);
               const gridCols = ips.length + 1;
-              const getColumnPosition = (index: any) => {
-                return `${(index + 1) * (100 / gridCols)}%`;
-              };
+              const getColumnPosition = (index: number) =>
+                `${(index + 1) * (100 / gridCols)}%`;
               const srcPos = getColumnPosition(srcIndex + 0.5);
               const dstPos = getColumnPosition(dstIndex + 0.5);
+
               return (
                 <div
                   key={i}
-                  className={`grid items-center hover:bg-gray-100 dark:hover:bg-neutral-900 transition-colors ${
+                  className={`grid items-center transition-colors ${
                     selectedPacket === p
-                      ? "bg-gray-200 dark:bg-neutral-700"
+                      ? "bg-neutral-200 dark:bg-neutral-800"
                       : ""
                   }`}
                   onClick={() => setSelectedPacket(p)}
@@ -271,17 +253,10 @@ const PCAPTab: React.FC<PCAPTabProps> = ({
                     minHeight: "2rem",
                   }}
                 >
-                  <div
-                    className="flex items-center justify-center p-2  text-sm"
-                    style={{
-                      gridColumn: 1,
-                      gridRow: 1,
-                    }}
-                  >
+                  <div className="flex items-center justify-center p-2 text-sm text-neutral-600 dark:text-neutral-400">
                     {formatTime(Number(p.values[0][0]))}
                   </div>
-
-                  <svg className="absolute w-full pointer-events-none dark:text-white">
+                  <svg className="absolute w-full pointer-events-none text-neutral-800 dark:text-neutral-200">
                     <defs>
                       <marker
                         id="arrowhead"
@@ -294,20 +269,21 @@ const PCAPTab: React.FC<PCAPTabProps> = ({
                         <polygon
                           points="0 0, 10 3.5, 0 7"
                           fill="currentColor"
-                          className="dark:fill-white"
                         />
                       </marker>
                     </defs>
                     <text
                       x={srcPos > dstPos ? dstPos : srcPos}
                       y="49%"
-                      className="text-sm dark:fill-white"
+                      className="text-xs fill-current"
                       textAnchor="middle"
-                      dx={
-                        Math.abs(parseInt(srcPos) - parseInt(dstPos)) / 2 + "%"
-                      }
+                      dx={`${
+                        Math.abs(
+                          Number.parseInt(srcPos) - Number.parseInt(dstPos)
+                        ) / 2
+                      }%`}
                     >
-                      {p.stream.type == "sip"
+                      {p.stream.type === "sip"
                         ? extractSipMethod(p.values[0][1])
                         : "RTP"}
                     </text>
@@ -317,7 +293,6 @@ const PCAPTab: React.FC<PCAPTabProps> = ({
                       x2={dstPos}
                       y2="51%"
                       stroke="currentColor"
-                      className="dark:stroke-white"
                       strokeWidth="2"
                       markerEnd="url(#arrowhead)"
                     />
@@ -329,58 +304,57 @@ const PCAPTab: React.FC<PCAPTabProps> = ({
         </div>
       </div>
 
-      {selectedPacket && (
-        <div className="flex-1 max-w-prose h-[95%] ml-4 bg-gray-50 dark:bg-neutral-800 rounded-lg shadow-inner overflow-auto">
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                {selectedPacket.stream.type == "sip" ? (
-                  <>
-                    {selectedPacket.stream.method} -{" "}
-                    {formatTime(Number(selectedPacket.values[0][0]))}
-                  </>
-                ) : (
-                  <>RTP</>
-                )}
-              </h3>
-              <button
-                onClick={() => setSelectedPacket(null)}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors rounded-full"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <AnimatePresence>
+        {selectedPacket && (
+          <motion.div
+            className="flex-1 max-w-md h-[100%] max-h-[100%] bg-white dark:bg-black border-r-2 rounded overflow-hidden"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+          >
+            <div className="h-full flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">
+                  {selectedPacket.stream.type === "sip" ? (
+                    <>
+                      {selectedPacket.stream.method} -{" "}
+                      {formatTime(Number(selectedPacket.values[0][0]))}
+                    </>
+                  ) : (
+                    <>RTP</>
+                  )}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedPacket(null)}
+                  className="hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-auto">
+                <pre className="font-mono text-sm whitespace-pre-wrap break-all text-neutral-700 dark:text-neutral-300">
+                  {selectedPacket.stream.type === "sip" ? (
+                    formatSipMessage(selectedPacket.values[0][1])
+                  ) : (
+                    <div>
+                      <p className="text-center">
+                        {selectedPacket.stream.src_ip}:
+                        {selectedPacket.stream.src_port}
+                        <b> ⇆ </b>
+                        {selectedPacket.stream.dst_ip}:
+                        {selectedPacket.stream.dst_port}
+                      </p>
+                      <Button className="w-full mt-4">RTP Statistics</Button>
+                    </div>
+                  )}
+                </pre>
+              </div>
             </div>
-            <div className="font-mono text-sm whitespace-pre-wrap break-all">
-              {selectedPacket.stream.type == "sip" ? (
-                formatSipMessage(selectedPacket.values[0][1])
-              ) : (
-                <>
-                  <div>
-                    <p className="text-center">
-                      {selectedPacket.stream.src_ip}:
-                      {selectedPacket.stream.src_port}
-                      <b> ⇆ </b>
-                      {selectedPacket.stream.dst_ip}:
-                      {selectedPacket.stream.dst_port}
-                    </p>
-                    <Button
-                      onClick={() => setIsModalOpen(true)}
-                      className="w-full mt-1"
-                    >
-                      Estatísticas RTP
-                    </Button>
-                    <RTCPModal
-                      isOpen={isModalOpen}
-                      onClose={() => setIsModalOpen(false)}
-                      txData={selectedPacket}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

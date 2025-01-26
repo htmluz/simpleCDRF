@@ -119,7 +119,7 @@ export default function GatewaysSettings() {
           )}
         </div>
       </form>
-      <div className="bg-gray-100 dark:bg-neutral-900 rounded-lg shadow-inner h-[90%] px-2">
+      <div className="bg-gray-100 dark:bg-neutral-900 rounded-lg shadow-inner h-[90%] p-2">
         {gatewaysData && gatewaysData.length > 0 ? (
           <table className="w-full">
             <thead>

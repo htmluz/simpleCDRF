@@ -221,7 +221,7 @@ export default function UserSettings() {
           )}
         </div>
       </form>
-      <div className="bg-gray-100 dark:bg-neutral-900 rounded-lg shadow-inner h-[90%] px-2">
+      <div className="bg-gray-100 dark:bg-neutral-900 rounded-lg shadow-inner h-[90%] p-2">
         {usersData && usersData.length > 0 ? (
           <table className="w-full">
             <thead>
