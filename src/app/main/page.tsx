@@ -30,6 +30,10 @@ interface BilhetesResponse {
   totalPages: number;
 }
 
+interface HomerCallResponse {
+  calls: HomerCall[];
+}
+
 const columnHelper = createColumnHelper<CallRecord>();
 const columnHelperHomer = createColumnHelper<HomerCall>();
 
@@ -42,42 +46,24 @@ const columnsHomer: ColumnDef<HomerCall, any>[] = [
       return format(new Date(isoString), "dd/MM/yyyy HH:mm:ss");
     },
   }),
-  columnHelperHomer.accessor("end_time", {
-    header: "Fim",
-    cell: (info) => {
-      const isoString = info.getValue();
-      if (!isoString) return "";
-      return format(new Date(isoString), "dd/MM/yyyy HH:mm:ss");
-    },
-  }),
-  columnHelperHomer.accessor(
-    (row) => ({ start: row.start_time, end: row.end_time }),
-    {
-      id: "duration",
-      header: "Duração",
-      cell: (info) => {
-        const { start, end } = info.getValue();
-        if (!start || !end) return "N/A";
-        const duration = intervalToDuration({
-          start: new Date(start),
-          end: new Date(end),
-        });
-        return `${duration.hours?.toString().padStart(2, "0") || "00"}:${
-          duration.minutes?.toString().padStart(2, "0") || "00"
-        }:${duration.seconds?.toString().padStart(2, "0") || "00"}`;
-      },
-    }
-  ),
-  columnHelperHomer.accessor("from_number", {
+  columnHelperHomer.accessor("brief_call_info.from_user", {
     header: "Origem",
     cell: (info) => info.getValue(),
   }),
-  columnHelperHomer.accessor("to_number", {
+  columnHelperHomer.accessor("brief_call_info.ruri_user", {
     header: "Destino",
     cell: (info) => info.getValue(),
   }),
-  columnHelperHomer.accessor("call_id", {
+  columnHelperHomer.accessor("brief_call_info.ruri_domain", {
+    header: "Domínio",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelperHomer.accessor("brief_call_info.callid", {
     header: "Call-ID",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelperHomer.accessor("brief_call_info.user_agent", {
+    header: "User Agent",
     cell: (info) => info.getValue(),
   }),
 ];
@@ -142,7 +128,7 @@ const columns = [
 
 export default function BilhetesPage() {
   const [data, setData] = useState<CallRecord[]>([]);
-  const [dataHomer, setDataHomer] = useState<HomerCall[]>([]);
+  const [dataHomer, setDataHomer] = useState<HomerCallResponse>({ calls: [] });
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 25,
@@ -166,17 +152,16 @@ export default function BilhetesPage() {
     codec: "",
   });
   const [filtersHomer, setFiltersHomer] = useState({
-    anyPhone: "",
-    callingPhone: "",
-    calledPhone: "",
-    startDate: new Date(today.getTime() - (3 * 60 + 15) * 60 * 1000)
+    from_user: "",
+    ruri_user: "",
+    start_time: new Date(today.getTime() - (3 * 60 + 15) * 60 * 1000)
       .toISOString()
       .slice(0, 16),
-    endDate: new Date(today.getTime() - 3 * 60 * 60 * 1000)
+    end_time: new Date(today.getTime() - 3 * 60 * 60 * 1000)
       .toISOString()
       .slice(0, 16),
-    domain: "",
-    callId: "",
+    ruri_domain: "",
+    call_id: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -195,7 +180,7 @@ export default function BilhetesPage() {
   });
 
   const tableHomer = useReactTable({
-    data: dataHomer,
+    data: dataHomer.calls,
     columns: columnsHomer,
     getCoreRowModel: getCoreRowModel(),
   });
@@ -255,22 +240,21 @@ export default function BilhetesPage() {
     setIsLoading(true);
 
     const queryParams = new URLSearchParams({
-      ...(filtersHomer.anyPhone && { anyPhone: filtersHomer.anyPhone }),
-      ...(filtersHomer.callingPhone && {
-        callingPhone: filtersHomer.callingPhone,
+      ...(filtersHomer.from_user && {
+        from_user: filtersHomer.from_user,
       }),
-      ...(filtersHomer.calledPhone && {
-        calledPhone: filtersHomer.calledPhone,
+      ...(filtersHomer.ruri_user && {
+        ruri_user: filtersHomer.ruri_user,
       }),
-      ...(filtersHomer.domain && {
-        calledPhone: filtersHomer.domain,
+      ...(filtersHomer.ruri_domain && {
+        ruri_domain: filtersHomer.ruri_domain,
       }),
-      ...(filtersHomer.callId && { callId: filtersHomer.callId }),
-      ...(filtersHomer.startDate && {
-        startDate: addHours(filtersHomer.startDate, 0),
+      ...(filtersHomer.call_id && { callId: filtersHomer.call_id }),
+      ...(filtersHomer.start_time && {
+        start_time: addHours(filtersHomer.start_time, 0),
       }),
-      ...(filtersHomer.endDate && {
-        endDate: addHours(filtersHomer.endDate, 0),
+      ...(filtersHomer.end_time && {
+        end_time: addHours(filtersHomer.end_time, 0),
       }),
     });
     const makeRequest = async () => {
@@ -291,7 +275,7 @@ export default function BilhetesPage() {
       }
       return response.json();
     };
-    const result: HomerCall[] = await makeRequest();
+    const result: HomerCallResponse = await makeRequest();
     if (result) {
       setDataHomer(result);
     }
@@ -360,7 +344,7 @@ export default function BilhetesPage() {
           />
           <HomerTableComponent
             table={tableHomer}
-            data={dataHomer}
+            data={dataHomer.calls}
             isLoading={isLoading}
           />
         </TabsContent>

@@ -1,24 +1,24 @@
 interface ReportBlock {
-  dlsr: number;
+  source_ssrc: number;
   fraction_lost: number;
+  packets_lost: number;
   highest_seq_no: number;
   ia_jitter: number;
   lsr: number;
-  packets_lost: number;
-  source_ssrc: number;
+  dlsr: number;
 }
 
 interface ReportBlockXR {
-  burst_density: number;
-  burst_duration: number;
-  end_system_delay: number;
-  fraction_discard: number;
-  fraction_lost: number;
-  gap_density: number;
-  gap_duration: number;
-  id: number;
-  round_trip_delay: number;
   type: number;
+  id: number;
+  fraction_lost: number;
+  fraction_discard: number;
+  burst_density: number;
+  gap_density: number;
+  burst_duration: number;
+  gap_duration: number;
+  round_trip_delay: number;
+  end_system_delay: number;
 }
 
 interface SenderInformation {

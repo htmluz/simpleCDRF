@@ -32,18 +32,14 @@ export interface CallRecord {
   "Gw-Name": string;
 }
 
-export interface CallRecordFull {
-  Bid: string;
-  LegA: CallRecord;
-  LegB: CallRecord;
-}
-
 export interface HomerCallMessages {
+  //deprecated
   stream: HomerStream;
   values: string[][];
 }
 
 export interface HomerStream {
+  //deprecated
   dst_ip: string;
   dst_port: string;
   hostname: string;
@@ -60,11 +56,78 @@ export interface HomerStream {
   type: string;
 }
 
+export interface HomerCallInfo {
+  ruri_user: string;
+  ruri_domain: string;
+  from_user: string;
+  from_tag: string;
+  to_user: string;
+  callid: string;
+  cseq: string;
+  method: string;
+  user_agent: string;
+}
+
 export interface HomerCall {
-  call_id: string;
-  end_time: string;
+  sid: string;
+  brief_call_info: HomerCallInfo;
   start_time: string;
-  to_number: string;
-  from_number: string;
-  messages: HomerCallMessages[];
+  end_time: string;
+}
+
+export interface HomerPcapData {
+  call_id: string;
+  messages: (HomerSIPMessages | HomerRTCPFlows)[];
+}
+
+export interface HomerSIPMessages {
+  create_date: string;
+  protocol_header: HomerProtocolHeader;
+  data_header: HomerCallInfo;
+  raw: string;
+  type: "sip";
+}
+
+export interface HomerRTCPFlows {
+  type: "rtcp_flow";
+  src_ip: string;
+  dst_ip: string;
+  messages: HomerRTCPMessages[];
+}
+
+export interface HomerRTCPMessages {
+  create_date: string;
+  protocol_header: HomerProtocolHeader;
+  data_header: HomerRTCPDataHeader;
+  raw: HomerRTCPRaw;
+  type: "rtcp";
+}
+
+export interface HomerProtocolHeader {
+  protocolFamily: number;
+  protocol: number;
+  srcIp: string;
+  dstIp: string;
+  srcPort: number;
+  dstPort: number;
+  timeSeconds: number;
+  timeUseconds: number;
+  payloadType: number;
+  captureId: string;
+  correlation_id: string;
+}
+
+export interface HomerRTCPDataHeader {
+  node: string;
+  proto: string;
+}
+
+export interface HomerRTCPRaw {
+  sender_information: SenderInformation;
+  ssrc: number;
+  type: number;
+  report_count: number;
+  report_blocks: ReportBlock[];
+  report_blocks_xr: ReportBlockXR;
+  sdes_ssrc: number;
 }

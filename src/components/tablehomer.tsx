@@ -6,12 +6,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import PCAPTab from "./homer_callid";
-import { convertFromUnixtoIso } from "@/utils/dateUtils";
 import { flexRender } from "@tanstack/react-table";
 import { HomerCall } from "@/models/bilhetes";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState } from "react";
+import ModalInfos from "./modalInfos";
 
 interface TableComponentProps {
   table: any;
@@ -25,10 +23,12 @@ export const HomerTableComponent = ({
   isLoading,
 }: TableComponentProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [callID, setCallID] = useState("");
   const [selectedRow, setSelectedRow] = useState<HomerCall | null>(null);
 
   const handleRowClick = (row: HomerCall) => {
     setSelectedRow(row);
+    setCallID(row.sid);
     setIsModalOpen(true);
   };
 
@@ -91,15 +91,12 @@ export const HomerTableComponent = ({
         </Table>
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-screen-2xl h-[90%] cursor-default overflow-hidden">
-          <PCAPTab
-            callId={selectedRow?.call_id}
-            time={convertFromUnixtoIso(selectedRow?.messages[0].values[0][0])}
-            calltoPcap={selectedRow}
-          />
-        </DialogContent>
-      </Dialog>
+      <ModalInfos
+        isOpen={isModalOpen}
+        callId={callID}
+        onOpenChange={setIsModalOpen}
+        defaultTab="pcap"
+      />
     </>
   );
 };

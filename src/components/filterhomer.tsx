@@ -10,13 +10,12 @@ import {
 
 interface FilterComponentProps {
   filters: {
-    anyPhone: string;
-    callingPhone: string;
-    calledPhone: string;
-    startDate: string;
-    endDate: string;
-    domain: string;
-    callId: string;
+    from_user: string;
+    ruri_user: string;
+    start_time: string;
+    end_time: string;
+    ruri_domain: string;
+    call_id: string;
   };
   setFilters: (filters: any) => void;
   handleSearch: (e: React.FormEvent) => void;
@@ -40,33 +39,16 @@ export const FilterHomer = ({
           >
             <div>
               <label className="font-mono block text-sm font-medium mb-1">
-                Telefone
-              </label>
-              <Input
-                type="text"
-                className="font-mono"
-                value={filters.anyPhone}
-                onChange={(e) =>
-                  setFilters((prev: any) => ({
-                    ...prev,
-                    anyPhone: e.target.value,
-                  }))
-                }
-                placeholder="Número"
-              />
-            </div>
-            <div>
-              <label className="font-mono block text-sm font-medium mb-1">
                 Origem
               </label>
               <Input
                 type="text"
                 className="font-mono"
-                value={filters.callingPhone}
+                value={filters.from_user}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
                     ...prev,
-                    callingPhone: e.target.value,
+                    from_user: e.target.value,
                   }))
                 }
                 placeholder="Origem"
@@ -79,11 +61,11 @@ export const FilterHomer = ({
               <Input
                 type="text"
                 className="font-mono"
-                value={filters.calledPhone}
+                value={filters.ruri_user}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
                     ...prev,
-                    calledPhone: e.target.value,
+                    ruri_user: e.target.value,
                   }))
                 }
                 placeholder="Destino"
@@ -96,11 +78,11 @@ export const FilterHomer = ({
               <Input
                 type="text"
                 className="font-mono"
-                value={filters.callId}
+                value={filters.call_id}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
                     ...prev,
-                    callId: e.target.value,
+                    call_id: e.target.value,
                   }))
                 }
                 placeholder="Call-ID"
@@ -113,11 +95,11 @@ export const FilterHomer = ({
               <Input
                 type="text"
                 className="font-mono"
-                value={filters.domain}
+                value={filters.ruri_domain}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
                     ...prev,
-                    domain: e.target.value,
+                    ruri_domain: e.target.value,
                   }))
                 }
                 placeholder="Domínio"
@@ -130,11 +112,11 @@ export const FilterHomer = ({
               <Input
                 type="datetime-local"
                 className="font-mono"
-                value={filters.startDate}
+                value={filters.start_time}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
                     ...prev,
-                    startDate: e.target.value,
+                    start_time: e.target.value,
                   }))
                 }
               />
@@ -146,26 +128,19 @@ export const FilterHomer = ({
               <Input
                 type="datetime-local"
                 className="font-mono"
-                value={filters.endDate}
+                value={filters.end_time}
                 onChange={(e) =>
                   setFilters((prev: any) => ({
                     ...prev,
-                    endDate: e.target.value,
+                    end_time: e.target.value,
                   }))
                 }
               />
             </div>
-            <Button type="submit" className="mt-6 font-mono">
-              Buscar
+            <Button type="submit" className="mt-6 font-mono col-span-2">
+              Buscar no Homer
             </Button>
           </form>
-          <div className="bg-neutral-100 dark:bg-neutral-800 rounded p-2 mt-4 flex select-none cursor-default">
-            <TriangleAlert className="h-5 w-5 mt-1 mr-1 text-muted-foreground" />
-            <p className="font-mono mt-1 text-muted-foreground">
-              Buscas sem ser por Call-ID por enquanto são mais lentas. Vão
-              demorar!
-            </p>
-          </div>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
