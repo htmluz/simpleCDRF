@@ -87,11 +87,11 @@ export function RTCPChart({
                   <Line
                     key={`${flowIndex}-${dataKey}`}
                     type="monotone"
-                    dataKey={(dataPoint: RTCPDataPoint) =>
-                      dataPoint.flowIndex === flowIndex
-                        ? dataPoint.data[dataKey]
-                        : null
-                    }
+                    // dataKey={(dataPoint: RTCPDataPoint) =>
+                    //   dataPoint.flowIndex === flowIndex
+                    //     ? dataPoint.data[dataKey]
+                    //     : null
+                    // }
                     name={`${dataNames[keyIndex]} (Flow ${flowIndex})`}
                     stroke={`var(--color-${dataKey})`}
                     connectNulls

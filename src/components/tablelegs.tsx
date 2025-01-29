@@ -6,9 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import PCAPTab from "./homer_callid";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -18,8 +16,6 @@ import {
 } from "@/components/ui/select";
 import { flexRender } from "@tanstack/react-table";
 import { CallRecord } from "@/models/bilhetes";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import ModalInfos from "./modalInfos";
 
@@ -148,6 +144,7 @@ export const TableComponent = ({
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
         selectedRow={selectedRow}
+        callId=""
         defaultTab="radius"
       />
     </>

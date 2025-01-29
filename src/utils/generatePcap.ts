@@ -1,4 +1,10 @@
-import { HomerCall, HomerStream } from "@/models/bilhetes";
+import {
+  HomerCall,
+  HomerPcapData,
+  HomerProtocolHeader,
+  HomerStream,
+} from "@/models/bilhetes";
+import { isoToNanoTimestamp } from "./dateUtils";
 
 const PCAP_CONSTANTS = {
   GLOBAL_HEADER_SIZE: 24,
@@ -134,11 +140,11 @@ export class PCAPWriter {
 
   private createPacket(
     timestamp: string,
-    stream: HomerStream,
+    stream: HomerProtocolHeader,
     payload: Uint8Array
   ): Uint8Array {
-    const srcPort = parseInt(stream.src_port) || 0;
-    const dstPort = parseInt(stream.dst_port) || 0;
+    const srcPort = stream.srcPort || 0;
+    const dstPort = stream.dstPort || 0;
 
     const udpLength = PCAP_CONSTANTS.UDP_HEADER_SIZE + payload.length;
     const ipLength = PCAP_CONSTANTS.IP_HEADER_SIZE + udpLength;
@@ -161,7 +167,7 @@ export class PCAPWriter {
 
     // header ip
     packet.set(
-      this.createIPHeader(stream.src_ip, stream.dst_ip, ipLength),
+      this.createIPHeader(stream.srcIp, stream.dstIp, ipLength),
       offset
     );
     offset += PCAP_CONSTANTS.IP_HEADER_SIZE;
@@ -175,29 +181,32 @@ export class PCAPWriter {
     return packet;
   }
 
-  public generatePCAP(callData: HomerCall): Blob {
+  public generatePCAP(callData: HomerPcapData): Blob {
     const packets: Uint8Array[] = [];
 
     packets.push(new Uint8Array(this.createGlobalHeader()));
 
-    callData.messages.forEach((message) => {
-      message.values.forEach(([timestamp, payloadText]) => {
+    callData.messages.forEach((msg) => {
+      if (msg.type == "sip") {
         try {
-          const payload = new TextEncoder().encode(payloadText);
-
+          const payload = new TextEncoder().encode(msg.raw);
+          const timestamp = msg.create_date;
           if (payload.length > PCAP_CONSTANTS.MAX_UDP_PAYLOAD) {
             console.warn(
               `payload mt grande (${payload.length} bytes), pulando pacote`
             );
             return;
           }
-
-          const packet = this.createPacket(timestamp, message.stream, payload);
+          const packet = this.createPacket(
+            isoToNanoTimestamp(timestamp),
+            msg.protocol_header,
+            payload
+          );
           packets.push(packet);
         } catch (error) {
-          console.error("erro processando o pacote:", error);
+          console.error("erro processando o  pacote:", error);
         }
-      });
+      }
     });
 
     // juntando tudo os pacotes

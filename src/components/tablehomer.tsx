@@ -10,17 +10,27 @@ import { flexRender } from "@tanstack/react-table";
 import { HomerCall } from "@/models/bilhetes";
 import { useState } from "react";
 import ModalInfos from "./modalInfos";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Button } from "./ui/button";
 
 interface TableComponentProps {
   table: any;
   data: HomerCall[];
   isLoading: boolean;
+  handlePageSizeChange: (value: string) => void;
 }
 
 export const HomerTableComponent = ({
   table,
   data,
   isLoading,
+  handlePageSizeChange,
 }: TableComponentProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [callID, setCallID] = useState("");
@@ -60,7 +70,7 @@ export const HomerTableComponent = ({
                   Carregando...
                 </TableCell>
               </TableRow>
-            ) : data.length === 0 ? (
+            ) : !data ? (
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
@@ -89,6 +99,45 @@ export const HomerTableComponent = ({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getPageCount()} Páginas
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="space-y-2">
+            <Select defaultValue="25" onValueChange={handlePageSizeChange}>
+              <SelectTrigger id="select-15">
+                <SelectValue>
+                  {table.getState().pagination.pageSize}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="500">500</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Próxima
+          </Button>
+        </div>
       </div>
 
       <ModalInfos

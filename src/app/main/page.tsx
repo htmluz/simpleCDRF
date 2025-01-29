@@ -183,6 +183,12 @@ export default function BilhetesPage() {
     data: dataHomer.calls,
     columns: columnsHomer,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    state: {
+      pagination,
+    },
+    onPaginationChange: setPagination,
+    manualPagination: false,
   });
 
   const addHours = (dateString: string, hours: number): string => {
@@ -346,6 +352,7 @@ export default function BilhetesPage() {
             table={tableHomer}
             data={dataHomer.calls}
             isLoading={isLoading}
+            handlePageSizeChange={handlePageSizeChange}
           />
         </TabsContent>
         <TabsContent value="settings">

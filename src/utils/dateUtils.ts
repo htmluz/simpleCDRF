@@ -52,6 +52,12 @@ export function convertFromUnixtoIso(timestamp: string | undefined): string {
   }
 }
 
+export function isoToNanoTimestamp(isoString: string): string {
+  const milliseconds = new Date(isoString).getTime();
+  const nanoseconds = milliseconds.toString() + "000000";
+  return nanoseconds;
+}
+
 export function formatDate(date: string | Date): string {
   if (date == "") {
     return "";

@@ -14,6 +14,7 @@ import {
 import { API_BASE_URL } from "@/lib/config";
 import CallFlow from "./callflow";
 import RTCPCharts from "./rtcp";
+import { PCAPWriter } from "@/utils/generatePcap";
 
 interface ModalInfosProps {
   isOpen: boolean;
@@ -73,7 +74,6 @@ const ModalInfos = ({
 
   const fetchPcapData = async (id: string) => {
     try {
-      console.log(id);
       setPcapData(null);
       setPcapLoading(true);
       setPcapError(null);
@@ -84,9 +84,13 @@ const ModalInfos = ({
       }
 
       const data = await response.json();
-      console.log(data);
       setPcapLoading(false);
-      setPcapData(data);
+      if (data.data.messages.length == 0) {
+        setPcapData(null);
+        setPcapError("Chamada não encontrada");
+      } else {
+        setPcapData(data);
+      }
     } catch (err) {
       setPcapError(err instanceof Error ? err.message : "Erro pcap");
       setPcapData(null);
@@ -123,8 +127,23 @@ const ModalInfos = ({
       }
     }
     setRTCPFlows(abc);
-    console.log(abc);
   }, [pcapData]);
+
+  const generatePcap = () => {
+    if (!pcapData) return console.log("erro sem pcapdata");
+    try {
+      const pcapWriter = new PCAPWriter();
+      const pcapBlob = pcapWriter.generatePCAP(pcapData.data);
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(pcapBlob);
+      link.download = `${pcapData.data.call_id}.pcap`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      alert(`erro gerando a captura ${error}`);
+    }
+  };
 
   if (!isOpen) return null;
   return (
@@ -157,13 +176,18 @@ const ModalInfos = ({
                 )}
                 {reduzido ? "" : "Call Flow"}
               </TabsTrigger>
-              <TabsTrigger value="rtcp" className="px-1 justify-start">
+              <TabsTrigger disabled value="rtcp" className="px-1 justify-start">
                 <ChartNetwork className="mr-1 h-4 w-4" />
                 {reduzido ? "" : "RTCP"}
               </TabsTrigger>
               <button
-                disabled
-                className="px-1 justify-start hover:shadow cursor-pointer hover:bg-white dark:hover:bg-black transition-all flex w-full active:text-black rounded dark:active:text-white"
+                onClick={() => generatePcap()}
+                disabled={pcapError ? true : false}
+                className={`px-1 justify-start transition-all flex w-full rounded ${
+                  !pcapError
+                    ? "hover:shadow cursor-pointer hover:bg-white dark:hover:bg-black active:text-black dark:active:text-white"
+                    : "text-neutral-400"
+                }`}
               >
                 <Download
                   className={`mt-1 mr-1 h-4 w-4 ${reduzido ? "my-1" : ""}`}
