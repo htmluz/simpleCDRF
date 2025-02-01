@@ -7,6 +7,8 @@ import { getTokens, getUserRole } from "@/lib/auth";
 import StorageSettings from "@/components/storage";
 import UserSettings from "@/components/users";
 import GatewaysSettings from "@/components/gateways";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Database, ServerCog, UserCog } from "lucide-react";
 
 export default function Configs() {
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -26,38 +28,48 @@ export default function Configs() {
   }, []);
 
   return (
-    <div className="flex h-full min-h-[80vh] rounded-lg shadow-lg overflow-hidden bg-white dark:bg-black">
-      <div className="w-1/4 bg-gray-200 dark:bg-neutral-900 select-none p-4 flex flex-col space-y-4">
-        {userRole == "admin" ? (
-          <>
-            <Button
-              variant={selectedTab === "rotinas" ? "default" : "outline"}
-              onClick={() => setSelectedTab("rotinas")}
-            >
-              Armazenamento
-            </Button>
-            <Button
-              variant={selectedTab === "gateways" ? "default" : "outline"}
-              onClick={() => setSelectedTab("gateways")}
-            >
-              Gateways
-            </Button>
-          </>
-        ) : (
-          <></>
-        )}
-        <Button
-          variant={selectedTab === "usuarios" ? "default" : "outline"}
-          onClick={() => setSelectedTab("usuarios")}
+    <div className="flex h-full min-h-[90vh] rounded-lg shadow-lg overflow-hidden bg-white dark:bg-black p-2">
+      <Tabs defaultValue="users" className="flex w-full">
+        <TabsList
+          className={`font-mono h-full px-1 mr-3 flex flex-col items-start justify-start w-auto border-r border-gray-200 dark:border-neutral-800 transition-all duration-300 ease-in-out}`}
         >
-          Usuários
-        </Button>
-      </div>
-      <div className="flex-1 p-6 bg-white dark:bg-black relative">
-        {selectedTab === "rotinas" && <StorageSettings />}
-        {selectedTab === "usuarios" && <UserSettings />}
-        {selectedTab === "gateways" && <GatewaysSettings />}
-      </div>
+          {userRole == "admin" ? (
+            <>
+              <TabsTrigger
+                value="storage"
+                className="px-5 w-full justify-start"
+              >
+                <Database className="h-4 w-4 mr-1" />
+                Armazenamento
+              </TabsTrigger>
+              <TabsTrigger
+                value="gateways"
+                className="px-5 w-full justify-start"
+              >
+                <ServerCog className="h-4 w-4 mr-1" />
+                Gateways
+              </TabsTrigger>
+            </>
+          ) : (
+            <></>
+          )}
+          <TabsTrigger value="users" className="px-5 w-full justify-start">
+            <UserCog className="h-4 w-4 mr-1" />
+            Usuários
+          </TabsTrigger>
+        </TabsList>
+        <div className="w-full">
+          <TabsContent value="storage">
+            <StorageSettings />
+          </TabsContent>
+          <TabsContent value="users">
+            <UserSettings />
+          </TabsContent>
+          <TabsContent value="gateways">
+            <GatewaysSettings />
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

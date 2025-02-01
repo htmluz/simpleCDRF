@@ -11,7 +11,7 @@ import { Button } from "./ui/button";
 import { getTokens, getUserName, getUserRole } from "@/lib/auth";
 import Success from "./ui/success";
 import Failure from "./ui/failure";
-import { UserPen } from "lucide-react";
+import { Plus, UserPen, X } from "lucide-react";
 import { API_BASE_URL } from "@/lib/config";
 
 interface User {
@@ -33,6 +33,7 @@ export default function UserSettings() {
     "idle" | "success" | "failure" | "loading"
   >("idle");
   const [isChanged, setIsChanged] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const resetStatus = () => {
     setTimeout(() => {
@@ -165,100 +166,151 @@ export default function UserSettings() {
   }, []);
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <div className="flex space-x-4 mb-6">
-          <Input
-            type="text"
-            onChange={handleInputChangeUser}
-            value={userChange?.username}
-            placeholder="Usuário"
-            required
-            disabled={userOwnInfo?.role !== "admin"}
-          ></Input>
-          <Input
-            type="password"
-            onChange={handleInputChangePass}
-            value={userChange?.password}
-            required={userOwnInfo?.role === "user"}
-            placeholder="Senha"
-          ></Input>
-          <Select
-            onValueChange={handleRoleChange}
-            disabled={userOwnInfo?.role !== "admin"}
-            defaultValue="user"
-          >
-            <SelectTrigger className="w-1/5" id="select-15">
-              <SelectValue>{userChange?.role}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="user">Usuário</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-          {status === "idle" ? (
-            <>
-              {userOwnInfo?.username == userChange?.username ? (
-                <Button type="submit" disabled={!isChanged}>
-                  Atualizar
-                </Button>
-              ) : usersData?.some(
-                  (u) => u.username === userChange?.username
-                ) ? (
-                <Button type="submit" disabled={!isChanged}>
-                  Atualizar
-                </Button>
-              ) : (
-                <Button type="submit" disabled={!isChanged}>
-                  Criar Usuário
-                </Button>
-              )}
-            </>
-          ) : status === "success" ? (
-            <Success />
-          ) : (
-            <Failure />
-          )}
-        </div>
-      </form>
-      <div className="bg-gray-100 dark:bg-neutral-900 rounded-lg shadow-inner h-[90%] p-2">
-        {usersData && usersData.length > 0 ? (
-          <table className="w-full">
-            <thead>
-              <tr className="">
-                <th className="text-start w-[30%]">Usuário</th>
-                <th className="text-start w-[10%]">Grupo</th>
-                <th className="text-start"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {usersData.map((user, idx) => (
-                <tr
-                  key={idx}
-                  className="hover:bg-gray-200 dark:hover:bg-neutral-800 transition-colors rounded-xl hover:shadow-sm select-none"
+    <div className="max-w-full mx-auto px-4 py-0 font-mono">
+      {/* Edit/Create User Modal */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl p-6 w-full max-w-2xl m-4 animate-in fade-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-medium">
+                {usersData?.some((u) => u.username === userChange?.username)
+                  ? "Editar Usuário"
+                  : "Criar Usuário"}
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(false)}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">
+                    Usuário
+                  </label>
+                  <Input
+                    type="text"
+                    onChange={handleInputChangeUser}
+                    value={userChange?.username}
+                    placeholder="Digite o usuário"
+                    required
+                    disabled={userOwnInfo?.role !== "admin"}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">
+                    Senha
+                  </label>
+                  <Input
+                    type="password"
+                    onChange={handleInputChangePass}
+                    value={userChange?.password}
+                    required={userOwnInfo?.role === "user"}
+                    placeholder="Digite a senha"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">
+                    Permissão
+                  </label>
+                  <Select
+                    onValueChange={handleRoleChange}
+                    disabled={userOwnInfo?.role !== "admin"}
+                    defaultValue="user"
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue>{userChange?.role}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
                 >
-                  <td className="py-1 text-neutral-800 dark:text-neutral-200">
-                    {user.username}
-                  </td>
-                  <td className="text-neutral-800 dark:text-neutral-200">
-                    {user.role}
-                  </td>
-                  <td>
-                    {userOwnInfo?.role === "admin" && (
-                      <UserPen
-                        className="text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
-                        onClick={() => handleEditUser(user.username, user.role)}
-                      />
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>não tem</p>
+                  Cancelar
+                </Button>
+                {status === "idle" ? (
+                  <Button type="submit" disabled={!isChanged}>
+                    {usersData?.some((u) => u.username === userChange?.username)
+                      ? "Salvar Mudanças"
+                      : "Criar Usuário"}
+                  </Button>
+                ) : status === "success" ? (
+                  <Success />
+                ) : (
+                  <Failure />
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Users Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Add User Card */}
+        {userOwnInfo?.role === "admin" && !isEditing && (
+          <button
+            onClick={() => {
+              setIsEditing(true);
+              setUserChange({ username: "", role: "user", password: "" });
+            }}
+            className="border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors flex items-center justify-center group"
+          >
+            <div className="text-center">
+              <Plus className="w-8 h-8 mx-auto mb-2 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
+              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-300">
+                Adicionar Novo Usuário
+              </p>
+            </div>
+          </button>
         )}
+
+        {/* User Cards */}
+        {usersData?.map((user, idx) => (
+          <div
+            key={idx}
+            className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 dark:hover:border-neutral-700 p-6 hover:shadow-md transition-all"
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-lg font-medium">{user.username}</h3>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                  {user.role}
+                </p>
+              </div>
+              {userOwnInfo?.role === "admin" ||
+                (userOwnInfo?.username == user.username && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      handleEditUser(user.username, user.role);
+                      setIsEditing(true);
+                    }}
+                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                  >
+                    <UserPen className="w-4 h-4" />
+                  </Button>
+                ))}
+            </div>
+          </div>
+        ))}
       </div>
-    </>
+    </div>
   );
 }

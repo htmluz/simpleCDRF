@@ -186,7 +186,7 @@ const ModalInfos = ({
                 className={`px-1 justify-start transition-all flex w-full rounded ${
                   !pcapError
                     ? "hover:shadow cursor-pointer hover:bg-white dark:hover:bg-black active:text-black dark:active:text-white"
-                    : "text-neutral-400"
+                    : "text-neutral-400 dark:text-neutral-500"
                 }`}
               >
                 <Download

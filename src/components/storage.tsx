@@ -8,6 +8,7 @@ import Success from "./ui/success";
 import { refreshAccessToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/config";
+import { Check, RefreshCcw } from "lucide-react";
 
 interface RotinasResponse {
   days: number;
@@ -101,55 +102,62 @@ export default function StorageSettings() {
     }
   };
 
+  const StatusButton = () => {
+    switch (status) {
+      case "loading":
+        return <LoadingButton />;
+      case "success":
+        return <Success />;
+      case "failure":
+        return <Failure />;
+      default:
+        return (
+          <Button onClick={handleSubmit} disabled={!isChanged}>
+            Alterar
+          </Button>
+        );
+    }
+  };
+
+  if (!rotinasData) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingButton />
+      </div>
+    );
+  }
+
   return (
-    <div>
-      {rotinasData ? (
-        <>
-          <div className="flex items-center select-none">
-            <label htmlFor="cleanup_days">Limpar a cada</label>
-            <Input
-              id="cleanup_days"
-              type="number"
-              className="w-1/12 ml-2 mr-2 h-8"
-              value={rotinasData.days}
-              onChange={handleInputChange}
-            ></Input>
-            <p>dias.</p>
-          </div>
-          <div className="flex items-center">
-            <p className="text-sm italic text-gray-800 dark:text-gray-400 select-none">
-              Atualizado a última vez em{" "}
-              {format(new Date(rotinasData.updated_at), "dd/MM/yyyy HH:mm")}
-            </p>
-          </div>
-          {status === "idle" && (
-            <Button
-              onClick={handleSubmit}
-              disabled={!isChanged}
-              className="absolute bottom-6 right-6"
-            >
-              Alterar
-            </Button>
+    <div className="flex flex-col h-full relative space-y-1">
+      <div className="flex flex-col shadow w-1/4 p-2 rounded-lg dark:border dark:border-neutral-700">
+        <div className="flex items-center space-x-2 font-mono">
+          <label htmlFor="cleanup_days" className="whitespace-nowrap">
+            Limpar chamadas Radius a cada
+          </label>
+          <Input
+            id="cleanup_days"
+            type="number"
+            className="w-10 h-5 shadow-none border-none bg-neutral-100 dark:bg-neutral-800 p-0 px-1 mt-1 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            value={rotinasData.days}
+            onChange={handleInputChange}
+          />
+          <span>dias.</span>
+        </div>
+        <div className="flex justify-between">
+          <p className="text-sm text-gray-500 dark:text-gray-400 italic font-mono">
+            Última atualização:{" "}
+            {format(new Date(rotinasData.updated_at), "dd/MM/yyyy HH:mm")}
+          </p>
+          {isChanged ? (
+            <RefreshCcw className="h-4 w-4 text-gray-500" />
+          ) : (
+            <Check className="h-4 w-4 text-gray-500" />
           )}
-          {status === "loading" && (
-            <div className="absolute bottom-6 right-6">
-              <LoadingButton></LoadingButton>
-            </div>
-          )}
-          {status === "success" && (
-            <div className="absolute bottom-6 right-6">
-              <Success></Success>
-            </div>
-          )}
-          {status === "failure" && (
-            <div className="absolute bottom-6 right-6">
-              <Failure></Failure>
-            </div>
-          )}
-        </>
-      ) : (
-        <p></p>
-      )}
+        </div>
+      </div>
+      <div className="mt-auto flex justify-start font-mono pt-1">
+        <StatusButton />
+      </div>
     </div>
   );
 }
