@@ -2,6 +2,8 @@ import {
   HomerCall,
   HomerPcapData,
   HomerProtocolHeader,
+  HomerRTPDataHeader,
+  HomerRTPMessages,
   HomerStream,
 } from "@/models/bilhetes";
 import { isoToNanoTimestamp } from "./dateUtils";
@@ -181,6 +183,63 @@ export class PCAPWriter {
     return packet;
   }
 
+  private createRTPHeader(dataHeader: HomerRTPDataHeader): Uint8Array {
+    // RTP header é 12 bytes
+    const rtpHeader = new Uint8Array(12);
+
+    // Primeiro byte: Version (2 bits), Padding (1 bit), Extension (1 bit), CSRC Count (4 bits)
+    rtpHeader[0] =
+      (parseInt(dataHeader.Version) << 6) |
+      (parseInt(dataHeader.Padding) << 5) |
+      (parseInt(dataHeader.Extension) << 4) |
+      parseInt(dataHeader.CC);
+
+    // Segundo byte: Marker (1 bit), Payload Type (7 bits)
+    rtpHeader[1] =
+      (parseInt(dataHeader.Marker) << 7) | parseInt(dataHeader.PayloadType);
+
+    // Sequence Number (16 bits)
+    const seqNum = parseInt(dataHeader.SequenceNumber);
+    rtpHeader[2] = (seqNum >> 8) & 0xff;
+    rtpHeader[3] = seqNum & 0xff;
+
+    // Timestamp (32 bits)
+    const timestamp = parseInt(dataHeader.Timestamp);
+    rtpHeader[4] = (timestamp >> 24) & 0xff;
+    rtpHeader[5] = (timestamp >> 16) & 0xff;
+    rtpHeader[6] = (timestamp >> 8) & 0xff;
+    rtpHeader[7] = timestamp & 0xff;
+
+    // SSRC (32 bits)
+    const ssrc = parseInt(dataHeader.Ssrc);
+    rtpHeader[8] = (ssrc >> 24) & 0xff;
+    rtpHeader[9] = (ssrc >> 16) & 0xff;
+    rtpHeader[10] = (ssrc >> 8) & 0xff;
+    rtpHeader[11] = ssrc & 0xff;
+
+    return rtpHeader;
+  }
+
+  private processRTPPacket(rtpMessage: HomerRTPMessages): Uint8Array {
+    // Criar o cabeçalho RTP
+    const rtpHeader = this.createRTPHeader(rtpMessage.data_header);
+
+    // Converter o payload raw (number[]) para Uint8Array
+    const payload = new Uint8Array(rtpMessage.raw);
+
+    // Combinar cabeçalho RTP com payload
+    const rtpPacket = new Uint8Array(rtpHeader.length + payload.length);
+    rtpPacket.set(rtpHeader, 0);
+    rtpPacket.set(payload, rtpHeader.length);
+
+    // Criar o pacote completo usando a função createPacket existente
+    return this.createPacket(
+      isoToNanoTimestamp(rtpMessage.create_date),
+      rtpMessage.protocol_header,
+      rtpPacket
+    );
+  }
+
   public generatePCAP(callData: HomerPcapData): Blob {
     const packets: Uint8Array[] = [];
 
@@ -206,6 +265,11 @@ export class PCAPWriter {
         } catch (error) {
           console.error("erro processando o  pacote:", error);
         }
+      } else if (msg.type == "rtp_flow") {
+        msg.messages.forEach((rtpMsg: HomerRTPMessages) => {
+          const packet = this.processRTPPacket(rtpMsg);
+          packets.push(packet);
+        });
       }
     });
 

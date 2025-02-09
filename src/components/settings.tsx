@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { getTokens, getUserRole } from "@/lib/auth";
 import StorageSettings from "@/components/storage";
 import UserSettings from "@/components/users";

@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { CallRecord, HomerPcapData, HomerRTCPFlows } from "@/models/bilhetes";
+import {
+  CallRecord,
+  HomerPcapData,
+  HomerRTCPFlows,
+  HomerRTPFlows,
+} from "@/models/bilhetes";
 import RadiusModalContent from "./radiusModalContent";
 import {
   ArrowRightLeft,
@@ -10,10 +15,11 @@ import {
   Download,
   LoaderCircle,
   Phone,
+  Volume2Icon,
 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/config";
 import CallFlow from "./callflow";
-import RTCPCharts from "./rtcp";
+import { RTCPVisualizer } from "./rtcp";
 import { PCAPWriter } from "@/utils/generatePcap";
 
 interface ModalInfosProps {
@@ -45,6 +51,7 @@ const ModalInfos = ({
   const [pcapError, setPcapError] = useState<string | null>(null);
 
   const [RTCPFlows, setRTCPFlows] = useState<HomerRTCPFlows[] | null>(null);
+  const [RTPFlows, setRTPFlows] = useState<HomerRTPFlows[] | null>(null);
 
   const toggleReduzido = () => setReduzido((prev) => !prev);
 
@@ -121,12 +128,16 @@ const ModalInfos = ({
 
   useEffect(() => {
     let abc: any[] = [];
+    let def: any[] = [];
     for (const d of pcapData?.data.messages || []) {
       if (d.type == "rtcp_flow") {
         abc = [...abc, d];
+      } else if (d.type == "rtp_flow") {
+        def = [...def, d];
       }
     }
     setRTCPFlows(abc);
+    setRTPFlows(def);
   }, [pcapData]);
 
   const generatePcap = () => {
@@ -180,6 +191,14 @@ const ModalInfos = ({
                 <ChartNetwork className="mr-1 h-4 w-4" />
                 {reduzido ? "" : "RTCP"}
               </TabsTrigger>
+              <TabsTrigger
+                disabled={RTPFlows && RTPFlows.length > 1 ? false : true}
+                value="rtp"
+                className="px-1 justify-start"
+              >
+                <Volume2Icon className="mr-1 h-4 w-4" />
+                {reduzido ? "" : "RTP"}
+              </TabsTrigger>
               <button
                 onClick={() => generatePcap()}
                 disabled={pcapError ? true : false}
@@ -231,9 +250,12 @@ const ModalInfos = ({
             </TabsContent>
             <TabsContent
               value="rtcp"
-              className="max-w-screen-2xl overflow-hidden"
+              className="max-w-screen-2xl overflow-auto"
             >
-              {RTCPFlows && <RTCPCharts flows={RTCPFlows} />}
+              {RTCPFlows && <RTCPVisualizer flows={RTCPFlows} />}
+            </TabsContent>
+            <TabsContent value="rtp">
+              <p>Ainda não tem um player de áudio, baixe a captura pra ouvir</p>
             </TabsContent>
           </div>
         </Tabs>

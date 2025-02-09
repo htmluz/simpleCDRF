@@ -19,8 +19,9 @@ import { FilterHomer } from "@/components/filterhomer";
 import { TableComponent } from "@/components/tablelegs";
 import { HomerTableComponent } from "@/components/tablehomer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Phone, PhoneCall, Settings } from "lucide-react";
+import { Filter, Phone, PhoneCall, Settings } from "lucide-react";
 import Configs from "@/components/settings";
+import FilterRules from "@/components/filterrules";
 
 interface BilhetesResponse {
   data: CallRecord[];
@@ -326,6 +327,10 @@ export default function BilhetesPage() {
             <Settings className="mr-2 h-4 w-4" />
             Configurações
           </TabsTrigger>
+          <TabsTrigger value="filter_rules" className="font-mono">
+            <Filter className="mr-2 h-4 w-4" />
+            Filtros de Captura
+          </TabsTrigger>
           <ThemeToggle />
         </TabsList>
         <TabsContent value="tableRadius">
@@ -357,6 +362,9 @@ export default function BilhetesPage() {
         </TabsContent>
         <TabsContent value="settings">
           <Configs />
+        </TabsContent>
+        <TabsContent value="filter_rules">
+          <FilterRules />
         </TabsContent>
       </Tabs>
     </>

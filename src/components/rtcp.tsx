@@ -1,7 +1,6 @@
-import type React from "react";
-import type { HomerRTCPFlows } from "@/models/bilhetes";
-import { useRTCPData } from "@/hooks/useRTCPData";
-import { RTCPChart } from "@/components/RTPCChart";
+"use client";
+
+import React, { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -9,89 +8,116 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { HomerRTCPFlows } from "@/models/bilhetes";
 
-interface RTCPChartsProps {
+interface RTCPVisualizerProps {
   flows: HomerRTCPFlows[];
 }
 
-export const RTCPCharts: React.FC<RTCPChartsProps> = ({ flows }) => {
-  const parsedData = useRTCPData(flows);
+export function RTCPVisualizer({ flows }: RTCPVisualizerProps) {
+  const chartData = useMemo(() => {
+    const data: Array<{
+      timestamp: number;
+      fractionLost: number;
+      jitter: number;
+      roundTripDelay?: number;
+    }> = [];
+
+    flows.forEach((flow) => {
+      flow.messages.forEach((message) => {
+        const timestamp = new Date(message.create_date).getTime();
+        const reportBlock = message.raw.report_blocks[0];
+        const xr = message.raw.report_blocks_xr;
+
+        data.push({
+          timestamp,
+          fractionLost: reportBlock?.fraction_lost || 0,
+          jitter: reportBlock?.ia_jitter || 0,
+          roundTripDelay: xr?.round_trip_delay,
+        });
+      });
+    });
+    console.log(data);
+
+    return data.sort((a, b) => a.timestamp - b.timestamp);
+  }, [flows]);
 
   return (
-    <div className="space-y-6 cursor-default overflow-y-auto max-h-[100vh] py-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Flow Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-x-4 justify-evenly">
-            {flows.map((flow, index) => (
-              <div key={index}>
-                <p>
-                  <b>Flow {index + 1}:</b>
-                </p>
-                <p>
-                  <b>Src: </b> {flow.src_ip} <br />
-                  <b>Dst: </b> {flow.dst_ip}
-                </p>
-              </div>
-            ))}
+    <div className="">
+      <h1 className="font-mono font-bold mb-2">Métricas RTCP</h1>
+      <div className="flex font-mono text-sm rounded-lg border mb-4 p-2 space-x-4">
+        {flows.map((flow) => (
+          <div>
+            <p>
+              <b>Src IP:</b> {flow.src_ip}
+            </p>
+            <p>
+              <b>Dst IP: </b>
+              {flow.dst_ip}
+            </p>
           </div>
-        </CardContent>
-      </Card>
-
-      <RTCPChart
-        data={parsedData}
-        title="Mean Opinion Score (MOS)"
-        description="Quality of the call based on various factors"
-        dataKeys={["mos"]}
-        dataNames={["MOS"]}
-        yAxisDomain={[1, 5]}
-      />
-
-      <RTCPChart
-        data={parsedData}
-        title="Latency and Synchronization"
-        description="DLSR measures the time elapsed since the last RTCP report was received"
-        dataKeys={["data.report_blocks[0].dlsr"]}
-        dataNames={["DLSR"]}
-      />
-
-      <RTCPChart
-        data={parsedData}
-        title="Sending Performance"
-        description="Packets and octets sent during the call"
-        dataKeys={[
-          "data.sender_information.packets",
-          "data.sender_information.octets",
-        ]}
-        dataNames={["Packets", "Octets"]}
-      />
-
-      <RTCPChart
-        data={parsedData}
-        title="RTP Stability"
-        description="Gap and Burst durations during the call"
-        dataKeys={[
-          "data.report_blocks_xr.gap_duration",
-          "data.report_blocks_xr.burst_duration",
-        ]}
-        dataNames={["Gap Duration", "Burst Duration"]}
-      />
-
-      <RTCPChart
-        data={parsedData}
-        title="Connection Quality"
-        description="Packet loss, jitter, and round-trip time"
-        dataKeys={[
-          "data.report_blocks[0].fraction_lost",
-          "data.report_blocks[0].ia_jitter",
-          "data.report_blocks_xr.round_trip_delay",
-        ]}
-        dataNames={["Packet Loss", "Jitter", "RTT"]}
-      />
+        ))}
+      </div>
+      <div className="flex-col columns-2">
+        <Card>
+          <CardHeader className="p-2">
+            <CardTitle>Métricas RTCP</CardTitle>
+            <CardDescription>
+              Showing packet loss and jitter metrics over time
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="timestamp"
+                    tickFormatter={(timestamp) =>
+                      new Date(timestamp).toLocaleTimeString()
+                    }
+                  />
+                  <YAxis />
+                  <Tooltip
+                    labelFormatter={(timestamp) =>
+                      new Date(timestamp).toLocaleString()
+                    }
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="fractionLost"
+                    stroke="#8884d8"
+                    name="Packet Loss"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="jitter"
+                    stroke="#82ca9d"
+                    name="Jitter"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="roundTripDelay"
+                    stroke="#ffc658"
+                    name="Round Trip Delay"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
-};
-
-export default RTCPCharts;
+}

@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import {
   HomerPcapData,
   HomerRTCPFlows,
+  HomerRTPFlows,
   HomerSIPMessages,
 } from "@/models/bilhetes";
 import { X } from "lucide-react";
@@ -13,7 +14,7 @@ interface CallFlowProps {
 
 const CallFlow = ({ pcapData }: CallFlowProps) => {
   const [selectedPacket, setSelectedPacket] = useState<
-    HomerSIPMessages | HomerRTCPFlows | null
+    HomerSIPMessages | HomerRTCPFlows | HomerRTPFlows | null
   >(null);
   const [ips, setIps] = useState<string[]>([]);
 
@@ -24,7 +25,7 @@ const CallFlow = ({ pcapData }: CallFlowProps) => {
         if (msg.type == "sip") {
           uniqueIps.add(msg.protocol_header.srcIp);
           uniqueIps.add(msg.protocol_header.dstIp);
-        } else if (msg.type == "rtcp_flow") {
+        } else if (msg.type == "rtcp_flow" || msg.type == "rtp_flow") {
           uniqueIps.add(msg.src_ip);
           uniqueIps.add(msg.dst_ip);
         }
@@ -148,8 +149,10 @@ const CallFlow = ({ pcapData }: CallFlowProps) => {
                       >
                         {msg.type === "sip" ? (
                           <>{extractSipMethod(msg.raw)}</>
-                        ) : (
+                        ) : msg.type === "rtcp_flow" ? (
                           "RTCP"
+                        ) : (
+                          "RTP"
                         )}
                       </text>
                       <line

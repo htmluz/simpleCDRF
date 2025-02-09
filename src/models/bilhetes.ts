@@ -77,7 +77,7 @@ export interface HomerCall {
 
 export interface HomerPcapData {
   call_id: string;
-  messages: (HomerSIPMessages | HomerRTCPFlows)[];
+  messages: (HomerSIPMessages | HomerRTCPFlows | HomerRTPFlows)[];
 }
 
 export interface HomerSIPMessages {
@@ -103,6 +103,21 @@ export interface HomerRTCPMessages {
   type: "rtcp";
 }
 
+export interface HomerRTPFlows {
+  type: "rtp_flow";
+  src_ip: string;
+  dst_ip: string;
+  messages: HomerRTPMessages[];
+}
+
+export interface HomerRTPMessages {
+  create_date: string;
+  protocol_header: HomerProtocolHeader;
+  data_header: HomerRTPDataHeader;
+  raw: number[];
+  type: "rtp";
+}
+
 export interface HomerProtocolHeader {
   protocolFamily: number;
   protocol: number;
@@ -120,6 +135,19 @@ export interface HomerProtocolHeader {
 export interface HomerRTCPDataHeader {
   node: string;
   proto: string;
+}
+
+export interface HomerRTPDataHeader {
+  CC: string;
+  Ssrc: string;
+  node: string;
+  Marker: string;
+  Padding: string;
+  Version: string;
+  Extension: string;
+  Timestamp: string;
+  PayloadType: string;
+  SequenceNumber: string;
 }
 
 export interface HomerRTCPRaw {
