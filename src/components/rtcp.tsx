@@ -57,7 +57,7 @@ export function RTCPVisualizer({ flows }: RTCPVisualizerProps) {
       <h1 className="font-mono font-bold mb-2">Métricas RTCP</h1>
       <div className="flex font-mono text-sm rounded-lg border mb-4 p-2 space-x-4">
         {flows.map((flow) => (
-          <div>
+          <div key={flow.src_ip}>
             <p>
               <b>Src IP:</b> {flow.src_ip}
             </p>
